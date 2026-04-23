@@ -113,18 +113,88 @@ if diag_city:
         fig_rank.update_yaxes(autorange="reversed")
         st.plotly_chart(fig_rank, use_container_width=True)
 
-    # 污染类型判断
+    # ---------- 新增：城市智能诊断卡片 ----------
+    # 1. 当前排名与等级
+    current_rank = city_avg[city_avg['城市'] == diag_city].index[0] + 1
+    total_cities = len(city_avg)
+
+    def get_level(val):
+        if val < 35:
+            return "🟢 优"
+        elif val < 75:
+            return "🟡 良"
+        elif val < 115:
+            return "🟠 轻度污染"
+        elif val < 150:
+            return "🔴 中度污染"
+        elif val < 250:
+            return "🟣 重度污染"
+        else:
+            return "⚫ 严重污染"
+
+    current_level = get_level(city_pol_values.get(pollutant, city_pol_values.get('PM2.5', 0)))
+
+    # 2. 改善速度（近5年线性趋势）
+    city_history = df_main[(df_main['城市'] == diag_city) & (df_main['年份'].between(selected_year-4, selected_year))]
+    if not city_history.empty:
+        city_trend_yearly = city_history.groupby('年份')[pollutant].mean()
+        years = city_trend_yearly.index.values.reshape(-1, 1)
+        vals = city_trend_yearly.values
+        if len(years) >= 2:
+            from sklearn.linear_model import LinearRegression
+            model = LinearRegression()
+            model.fit(years, vals)
+            trend_slope = model.coef_[0]
+            if trend_slope < 0:
+                speed_text = f"改善中，年均减少 {abs(trend_slope):.2f} μg/m³"
+            else:
+                speed_text = f"恶化中，年均增加 {trend_slope:.2f} μg/m³"
+        else:
+            speed_text = "数据不足以计算趋势"
+    else:
+        speed_text = "数据缺失"
+
+    # 3. 污染类型判断与治理建议
     pm25_val = city_pol_values.get('PM2.5', 0)
     o3_val = city_pol_values.get('O3', 0)
     if pm25_val > o3_val * 1.2:
         poll_type = "PM2.5主导型"
+        advice = "建议重点控制燃煤、工业排放和机动车尾气，实施秋冬季攻坚。"
     elif o3_val > pm25_val * 1.2:
         poll_type = "O3敏感型"
+        advice = "应加强VOCs和NOx协同减排，尤其在夏季高温时段。"
     else:
         poll_type = "复合型"
-    st.caption(f"初步判断：{diag_city} 属于 **{poll_type}** 污染特征。")
+        advice = "需多污染物协同控制，分季节制定差异化策略。"
 
-# ==================== 3. 区域总结（保留原有解读） ====================
+    # 渲染诊断卡片
+    st.markdown(f"""
+    <div style="background:#f8f9fa; border-radius:16px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.04); border-left:6px solid #2e7d32; margin-top:20px;">
+        <h4 style="margin-top:0; color:#1b5e20;">📋 {diag_city} 综合诊断报告</h4>
+        <table style="width:100%; border-spacing:0;">
+            <tr>
+                <td style="padding:8px 0;"><b>🏆 当前排名</b></td>
+                <td style="padding:8px 0;">第 <b>{current_rank}</b> / {total_cities} 位</td>
+            </tr>
+            <tr>
+                <td style="padding:8px 0;"><b>📊 污染等级</b></td>
+                <td style="padding:8px 0;">{current_level}</td>
+            </tr>
+            <tr>
+                <td style="padding:8px 0;"><b>📈 改善趋势</b></td>
+                <td style="padding:8px 0;">{speed_text}</td>
+            </tr>
+            <tr>
+                <td style="padding:8px 0;"><b>🧬 污染类型</b></td>
+                <td style="padding:8px 0;"><b>{poll_type}</b></td>
+            </tr>
+        </table>
+        <hr style="margin:12px 0;">
+        <p style="margin-bottom:0;">💡 <b>治理建议：</b>{advice}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ==================== 3. 区域总结 ====================
 st.markdown("---")
 st.subheader("📝 区域污染总结")
 
@@ -188,7 +258,6 @@ rank_analysis = pd.merge(mean_rank, rank_std, on='城市')
 fig_rank_scatter = px.scatter(rank_analysis, x='平均排名', y='排名标准差',
                              hover_name='城市',
                              title=f"城市{pollutant}排名波动性（点越靠右越污染，越高波动越大）")
-# 标注波动最大的三个城市
 extreme = rank_analysis.nlargest(3, '排名标准差')
 for _, row in extreme.iterrows():
     fig_rank_scatter.add_annotation(x=row['平均排名'], y=row['排名标准差'],
