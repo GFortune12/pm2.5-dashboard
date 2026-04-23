@@ -373,6 +373,7 @@ else:
                 title="各污染类型污染物指纹特征"
             )
             st.plotly_chart(fig_cluster, use_container_width=True)
+            st.caption("💡 阅读方法：每个彩色多边形代表一类城市的平均污染指纹。轴上的数值越大，该污染物浓度越高；形状相似的城市属于同一污染类型。")
 
             # 显示每个选中城市属于哪一类
             st.markdown("**📍 已选城市分类结果**")
