@@ -212,12 +212,12 @@ elif analysis_type == "季节性规律":
         with col:
             st.markdown(f"""
             <div class="season-card" id="season{i}">
-                <div class="season-icon">{s['icon']}</div>
-                <div class="season-name">{s['name']}季</div>
-                <div class="season-avg">{s['avg']:.1f} <small>μg/m³</small></div>
+                <div class="season-icon">{['icon']}</div>
+                <div class="season-name">{['name']}季</div>
+                <div class="season-avg">{['avg']:.1f} <small>μg/m³</small></div>
             </div>
             """, unsafe_allow_html=True)
-            if st.button(f"查看{s['name']}季详情", key=f"season_btn_{i}"):
+            if st.button(f"查看{['name']}季详情", key=f"season_btn_{i}"):
                 selected_season = s['name']
 
     if selected_season:
@@ -332,52 +332,71 @@ else:
         st.plotly_chart(fig, use_container_width=True)
 
         # ====== 双城PK对比 ======
+                # ====== 城市污染类型聚类 ======
         st.markdown("---")
-        st.subheader("⚔️ 双城PK对比")
+        st.subheader("🧬 城市污染类型聚类分析")
 
-        selected_year_pk = st.session_state.get('selected_year', 2022)
-        df_year_pk = df_main[df_main['年份'] == selected_year_pk]
-        city_avg_pk = df_year_pk.groupby('城市')[pollutant].mean().reset_index().sort_values(pollutant)
+        from sklearn.cluster import KMeans
+        from sklearn.preprocessing import StandardScaler
 
-        if len(cities) >= 2:
-            col_a, col_b = st.columns(2)
-            with col_a:
-                city_a = st.selectbox("选择城市 A", cities, key="city_a")
-            with col_b:
-                other_cities = [c for c in cities if c != city_a]
-                default_b = other_cities[0] if other_cities else cities[0]
-                city_b = st.selectbox("选择城市 B", cities, index=cities.index(default_b), key="city_b")
+        # 用全部年份的均值进行聚类
+        cluster_pollutants = ['PM2.5', 'PM10', 'So2', 'No2', 'O3']
+        cluster_pollutants = [p for p in cluster_pollutants if p in df_main.columns]
 
-            data_a = df_year_pk[df_year_pk['城市'] == city_a][pollutant].mean()
-            data_b = df_year_pk[df_year_pk['城市'] == city_b][pollutant].mean()
-            rank_a = list(city_avg_pk['城市']).index(city_a) + 1
-            rank_b = list(city_avg_pk['城市']).index(city_b) + 1
+        if len(cluster_pollutants) >= 3:
+            city_all_avg = df_main.groupby('城市')[cluster_pollutants].mean().dropna()
 
-            c1, c2, c3 = st.columns(3)
-            c1.metric(f"🌫️ {city_a}", f"{data_a:.1f} μg/m³", f"排名 {rank_a}")
-            c2.metric(f"🌫️ {city_b}", f"{data_b:.1f} μg/m³", f"排名 {rank_b}")
-            diff = data_a - data_b
-            c3.metric("📊 差值", f"{abs(diff):.1f} μg/m³",
-                      delta=f"{city_a} 比 {city_b} {'高' if diff > 0 else '低'}",
-                      delta_color="inverse")
+            # 标准化
+            scaler = StandardScaler()
+            X_scaled = scaler.fit_transform(city_all_avg)
 
-            trend_a = df_main[df_main['城市'] == city_a].groupby('年份')[pollutant].mean()
-            trend_b = df_main[df_main['城市'] == city_b].groupby('年份')[pollutant].mean()
-            fig_dual = go.Figure()
-            fig_dual.add_trace(go.Scatter(x=trend_a.index, y=trend_a.values,
-                                          mode='lines+markers', name=city_a,
-                                          line=dict(color='#2e7d32', width=2)))
-            fig_dual.add_trace(go.Scatter(x=trend_b.index, y=trend_b.values,
-                                          mode='lines+markers', name=city_b,
-                                          line=dict(color='#ff8c00', width=2)))
-            fig_dual.update_layout(title=f"{city_a} vs {city_b} 年度趋势对比",
-                                   yaxis_title=f"{pollutant} (μg/m³)")
-            st.plotly_chart(fig_dual, use_container_width=True)
+            # K-Means 聚类（3类）
+            kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+            city_all_avg['聚类'] = kmeans.fit_predict(X_scaled)
 
-            verdict = f"{city_a} 优于 {city_b}" if data_a < data_b else f"{city_b} 优于 {city_a}"
-            st.caption(f"📌 {verdict}，年均浓度低 {abs(diff):.1f} μg/m³。")
+            # 各类别污染物均值
+            cluster_centers = city_all_avg.groupby('聚类')[cluster_pollutants].mean()
+
+            # 雷达图展示各类别指纹
+            fig_cluster = go.Figure()
+            color_map = {0: '#3498db', 1: '#e74c3c', 2: '#2ecc71'}
+            for c in cluster_centers.index:
+                fig_cluster.add_trace(go.Scatterpolar(
+                    r=cluster_centers.loc[c].values,
+                    theta=cluster_pollutants,
+                    fill='toself',
+                    name=f'类型{c}',
+                    line=dict(color=color_map.get(c, '#95a5a6'))
+                ))
+            fig_cluster.update_layout(
+                polar=dict(radialaxis=dict(visible=True)),
+                title="各污染类型污染物指纹特征"
+            )
+            st.plotly_chart(fig_cluster, use_container_width=True)
+
+            # 显示每个选中城市属于哪一类
+            st.markdown("**📍 已选城市分类结果**")
+            for c in cities:
+                if c in city_all_avg.index:
+                    cluster_label = city_all_avg.loc[c, '聚类']
+                    # 根据类别特征给一个描述
+                    pm25_val = city_all_avg.loc[c, 'PM2.5'] if 'PM2.5' in cluster_pollutants else 0
+                    so2_val = city_all_avg.loc[c, 'So2'] if 'So2' in cluster_pollutants else 0
+                    no2_val = city_all_avg.loc[c, 'No2'] if 'No2' in cluster_pollutants else 0
+                    pm10_val = city_all_avg.loc[c, 'PM10'] if 'PM10' in cluster_pollutants else 0
+
+                    if pm25_val > 50 and so2_val > 20:
+                        type_desc = "煤烟复合型"
+                    elif no2_val > 40:
+                        type_desc = "机动车尾气型"
+                    elif pm10_val > 80:
+                        type_desc = "扬尘/沙尘型"
+                    else:
+                        type_desc = "相对清洁型"
+
+                    st.markdown(f"- {c}：**类型{cluster_label}**（{type_desc}）")
         else:
-            st.info("请至少在侧边栏选择两个城市，才能进行双城PK对比。")
+            st.info("数据中缺少足够的污染物列，无法进行聚类分析。")
 
         # 城市差异解读（保留）
         st.markdown("---")
