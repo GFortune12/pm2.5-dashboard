@@ -377,54 +377,54 @@ else:
                       title=f"所选城市{pollutant}年度趋势对比")
         st.plotly_chart(fig, use_container_width=True)
             # ====== 双城PK对比 ======
-    st.markdown("---")
-    st.subheader("⚔️ 双城PK对比")
-
-    if len(cities) >= 2:
-        col_a, col_b = st.columns(2)
-        with col_a:
-            city_a = st.selectbox("选择城市 A", cities, key="city_a")
-        with col_b:
-            # 默认选一个不同于 A 的城市
-            other_cities = [c for c in cities if c != city_a]
-            default_b = other_cities[0] if other_cities else cities[0]
-            city_b = st.selectbox("选择城市 B", cities, index=cities.index(default_b), key="city_b")
-
-        # 获取两城当年数据
-        data_a = df_year[df_year['城市'] == city_a][pollutant].mean()
-        data_b = df_year[df_year['城市'] == city_b][pollutant].mean()
-        rank_a = list(city_avg['城市']).index(city_a) + 1
-        rank_b = list(city_avg['城市']).index(city_b) + 1
-
-        # 指标卡片
-        c1, c2, c3 = st.columns(3)
-        c1.metric(f"🌫️ {city_a}", f"{data_a:.1f} μg/m³", f"排名 {rank_a}")
-        c2.metric(f"🌫️ {city_b}", f"{data_b:.1f} μg/m³", f"排名 {rank_b}")
-        diff = data_a - data_b
-        c3.metric("📊 差值", f"{abs(diff):.1f} μg/m³", delta=f"{city_a} 比 {city_b} {'高' if diff > 0 else '低'}", delta_color="inverse")
-
-        # 双城趋势线叠加
-        trend_a = df_main[df_main['城市'] == city_a].groupby('年份')[pollutant].mean()
-        trend_b = df_main[df_main['城市'] == city_b].groupby('年份')[pollutant].mean()
-        fig_dual = go.Figure()
-        fig_dual.add_trace(go.Scatter(x=trend_a.index, y=trend_a.values,
-                                      mode='lines+markers', name=city_a,
-                                      line=dict(color='#2e7d32', width=2)))
-        fig_dual.add_trace(go.Scatter(x=trend_b.index, y=trend_b.values,
-                                      mode='lines+markers', name=city_b,
-                                      line=dict(color='#ff8c00', width=2)))
-        fig_dual.update_layout(title=f"{city_a} vs {city_b} 年度趋势对比",
-                               yaxis_title=f"{pollutant} (μg/m³)")
-        st.plotly_chart(fig_dual, use_container_width=True)
-
-        # 简要文字小结
-        if data_a < data_b:
-            verdict = f"{city_a} 的空气质量优于 {city_b}，年均浓度低 {abs(diff):.1f} μg/m³。"
+        st.markdown("---")
+        st.subheader("⚔️ 双城PK对比")
+    
+        if len(cities) >= 2:
+            col_a, col_b = st.columns(2)
+            with col_a:
+                city_a = st.selectbox("选择城市 A", cities, key="city_a")
+            with col_b:
+                # 默认选一个不同于 A 的城市
+                other_cities = [c for c in cities if c != city_a]
+                default_b = other_cities[0] if other_cities else cities[0]
+                city_b = st.selectbox("选择城市 B", cities, index=cities.index(default_b), key="city_b")
+    
+            # 获取两城当年数据
+            data_a = df_year[df_year['城市'] == city_a][pollutant].mean()
+            data_b = df_year[df_year['城市'] == city_b][pollutant].mean()
+            rank_a = list(city_avg['城市']).index(city_a) + 1
+            rank_b = list(city_avg['城市']).index(city_b) + 1
+    
+            # 指标卡片
+            c1, c2, c3 = st.columns(3)
+            c1.metric(f"🌫️ {city_a}", f"{data_a:.1f} μg/m³", f"排名 {rank_a}")
+            c2.metric(f"🌫️ {city_b}", f"{data_b:.1f} μg/m³", f"排名 {rank_b}")
+            diff = data_a - data_b
+            c3.metric("📊 差值", f"{abs(diff):.1f} μg/m³", delta=f"{city_a} 比 {city_b} {'高' if diff > 0 else '低'}", delta_color="inverse")
+    
+            # 双城趋势线叠加
+            trend_a = df_main[df_main['城市'] == city_a].groupby('年份')[pollutant].mean()
+            trend_b = df_main[df_main['城市'] == city_b].groupby('年份')[pollutant].mean()
+            fig_dual = go.Figure()
+            fig_dual.add_trace(go.Scatter(x=trend_a.index, y=trend_a.values,
+                                          mode='lines+markers', name=city_a,
+                                          line=dict(color='#2e7d32', width=2)))
+            fig_dual.add_trace(go.Scatter(x=trend_b.index, y=trend_b.values,
+                                          mode='lines+markers', name=city_b,
+                                          line=dict(color='#ff8c00', width=2)))
+            fig_dual.update_layout(title=f"{city_a} vs {city_b} 年度趋势对比",
+                                   yaxis_title=f"{pollutant} (μg/m³)")
+            st.plotly_chart(fig_dual, use_container_width=True)
+    
+            # 简要文字小结
+            if data_a < data_b:
+                verdict = f"{city_a} 的空气质量优于 {city_b}，年均浓度低 {abs(diff):.1f} μg/m³。"
+            else:
+                verdict = f"{city_b} 的空气质量优于 {city_a}，年均浓度低 {abs(diff):.1f} μg/m³。"
+            st.caption(f"📌 {verdict}")
         else:
-            verdict = f"{city_b} 的空气质量优于 {city_a}，年均浓度低 {abs(diff):.1f} μg/m³。"
-        st.caption(f"📌 {verdict}")
-    else:
-        st.info("请至少在侧边栏选择两个城市，才能进行双城PK对比。")
+            st.info("请至少在侧边栏选择两个城市，才能进行双城PK对比。")
 
         st.markdown("---")
         st.subheader("城市差异解读")
