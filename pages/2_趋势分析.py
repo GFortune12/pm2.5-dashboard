@@ -7,7 +7,7 @@ import numpy as np
 
 st.set_page_config(page_title="趋势分析", layout="wide")
 import sys
-sys.path.append('../')  # 确保能找到 style 模块（因为 pages 在子目录）
+sys.path.append('../')
 from style import apply_custom_styles
 apply_custom_styles()
 
@@ -34,7 +34,6 @@ pollutant = st.sidebar.selectbox(
     key="pollutant_selector_deep"
 )
 st.title(f"📈 {pollutant}趋势分析与预测")
-# 更新全局状态
 st.session_state['pollutant'] = pollutant
 
 # ---------- 1. 年度趋势与预测 ----------
@@ -66,7 +65,6 @@ if analysis_type == "年度趋势与预测":
     val_2022 = national[national['年份'] == 2022][pollutant].values[0]
     decline = (val_2013 - val_2022) / val_2013 * 100
 
-    # ========== 预测依据展示（优化版） ==========
     with st.expander("📐 点击查看预测模型依据"):
         if pollutant == 'O3':
             trend_desc = "O₃近年呈波动上升态势，线性模型仅作示意，实际趋势需谨慎解读"
@@ -76,10 +74,7 @@ if analysis_type == "年度趋势与预测":
             trend_desc = f"{pollutant}变化趋势"
 
         slope = model.coef_[0]
-        if slope < 0:
-            direction = "下降"
-        else:
-            direction = "上升"
+        direction = "下降" if slope < 0 else "上升"
 
         st.markdown(f"""
         **模型说明**：基于2013-2022年全国年均 **{pollutant}** 浓度，采用线性回归拟合趋势并外推至2026年。
@@ -97,7 +92,6 @@ if analysis_type == "年度趋势与预测":
         **数据来源**：全国城市空气质量历史数据集（2013‑2022）。
         """)
 
-    # ==================== 政策与事件卡片 ====================
     st.markdown("---")
     st.subheader("📜 治理历程与关键事件")
 
@@ -115,41 +109,15 @@ if analysis_type == "年度趋势与预测":
     row1_col1, row1_col2 = st.columns(2)
     row2_col1, row2_col2 = st.columns(2)
 
-    with row1_col1:
-        ev = events[0]
-        st.markdown(f"""
-        <div style="background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,0.04); border-left:6px solid #2e7d32; margin-bottom:20px;">
-            <h4 style="margin-top:0; color:#1b5e20;">{ev['icon']} {ev['year']}  {ev['title']}</h4>
-            <p style="margin-bottom:0;">{ev['desc']}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with row1_col2:
-        ev = events[1]
-        st.markdown(f"""
-        <div style="background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,0.04); border-left:6px solid #2e7d32; margin-bottom:20px;">
-            <h4 style="margin-top:0; color:#1b5e20;">{ev['icon']} {ev['year']}  {ev['title']}</h4>
-            <p style="margin-bottom:0;">{ev['desc']}</p>
-        </div>
-        """, unsafe_allow_html=True)
+    for col, ev in zip([row1_col1, row1_col2, row2_col1, row2_col2], events):
+        with col:
+            st.markdown(f"""
+            <div style="background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,0.04); border-left:6px solid #2e7d32; margin-bottom:20px;">
+                <h4 style="margin-top:0; color:#1b5e20;">{ev['icon']} {ev['year']}  {ev['title']}</h4>
+                <p style="margin-bottom:0;">{ev['desc']}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-    with row2_col1:
-        ev = events[2]
-        st.markdown(f"""
-        <div style="background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,0.04); border-left:6px solid #2e7d32; margin-bottom:20px;">
-            <h4 style="margin-top:0; color:#1b5e20;">{ev['icon']} {ev['year']}  {ev['title']}</h4>
-            <p style="margin-bottom:0;">{ev['desc']}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with row2_col2:
-        ev = events[3]
-        st.markdown(f"""
-        <div style="background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,0.04); border-left:6px solid #2e7d32; margin-bottom:20px;">
-            <h4 style="margin-top:0; color:#1b5e20;">{ev['icon']} {ev['year']}  {ev['title']}</h4>
-            <p style="margin-bottom:0;">{ev['desc']}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    # ==================== 趋势解读 ====================
     st.markdown("---")
     st.subheader("📊 趋势解读")
 
@@ -182,10 +150,10 @@ if analysis_type == "年度趋势与预测":
     </div>
     """, unsafe_allow_html=True)
 
+# ---------- 2. 季节性规律 ----------
 elif analysis_type == "季节性规律":
     st.header(f"{pollutant} 月度变化与四季解读")
 
-    # ====== 月度平均折线图 ======
     month_avg = df_main.groupby('月份')[pollutant].mean().reset_index()
     fig = px.line(month_avg, x='月份', y=pollutant, markers=True,
                   title=f"全国{pollutant}月度平均浓度")
@@ -193,7 +161,6 @@ elif analysis_type == "季节性规律":
     fig.update_traces(line=dict(color='#1565c0', width=3))
     st.plotly_chart(fig, use_container_width=True)
 
-    # ====== 四季卡片数据准备 ======
     df_season = df_main.copy()
     def get_season(month):
         if month in [3, 4, 5]:
@@ -214,7 +181,6 @@ elif analysis_type == "季节性规律":
         {"name": "冬", "icon": "❄️", "avg": season_avg.get('冬', 0)}
     ]
 
-    # 卡片悬浮样式
     st.markdown("""
     <style>
     .season-card {
@@ -234,19 +200,9 @@ elif analysis_type == "季节性规律":
         box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         background: #ffffff;
     }
-    .season-icon {
-        font-size: 36px;
-    }
-    .season-name {
-        font-weight: 600;
-        color: #1b5e20;
-        margin: 8px 0 4px 0;
-    }
-    .season-avg {
-        font-size: 24px;
-        font-weight: bold;
-        color: #2e7d32;
-    }
+    .season-icon { font-size: 36px; }
+    .season-name { font-weight: 600; color: #1b5e20; margin: 8px 0 4px 0; }
+    .season-avg { font-size: 24px; font-weight: bold; color: #2e7d32; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -254,18 +210,16 @@ elif analysis_type == "季节性规律":
     selected_season = None
     for i, (col, s) in enumerate(zip(cols, seasons)):
         with col:
-            card_html = f"""
+            st.markdown(f"""
             <div class="season-card" id="season{i}">
-                <div class="season-icon">{['icon']}</div>
-                <div class="season-name">{['name']}季</div>
-                <div class="season-avg">{['avg']:.1f} <small>μg/m³</small></div>
+                <div class="season-icon">{s['icon']}</div>
+                <div class="season-name">{s['name']}季</div>
+                <div class="season-avg">{s['avg']:.1f} <small>μg/m³</small></div>
             </div>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
-            if st.button(f"查看{['name']}季详情", key=f"season_btn_{i}"):
+            """, unsafe_allow_html=True)
+            if st.button(f"查看{s['name']}季详情", key=f"season_btn_{i}"):
                 selected_season = s['name']
 
-    # ====== 点击卡片后展现详情 ======
     if selected_season:
         st.markdown("---")
         st.subheader(f"{selected_season}季 {pollutant} 深度解读")
@@ -329,7 +283,7 @@ elif analysis_type == "季节性规律":
     else:
         st.info("👆 点击上方任意季节卡片，查看该季节的详细解读和区域对比。")
 
-    # ====== 原有季节性规律总结 ======
+    # 原有季节性规律总结
     st.markdown("---")
     st.subheader("📊 季节性规律总结")
 
@@ -376,61 +330,56 @@ else:
         fig = px.line(city_trend, x='年份', y=pollutant, color='城市', markers=True,
                       title=f"所选城市{pollutant}年度趋势对比")
         st.plotly_chart(fig, use_container_width=True)
-        
-            # ====== 双城PK对比 ======
-    st.markdown("---")
-    st.subheader("⚔️ 双城PK对比")
 
-    # 获取当前选中年份并筛选数据（确保变量存在）
-    selected_year_pk = st.session_state.get('selected_year', 2022)
-    df_year_pk = df_main[df_main['年份'] == selected_year_pk]
-    city_avg_pk = df_year_pk.groupby('城市')[pollutant].mean().reset_index().sort_values(pollutant)
+        # ====== 双城PK对比 ======
+        st.markdown("---")
+        st.subheader("⚔️ 双城PK对比")
 
-    if len(cities) >= 2:
-        col_a, col_b = st.columns(2)
-        with col_a:
-            city_a = st.selectbox("选择城市 A", cities, key="city_a")
-        with col_b:
-            other_cities = [c for c in cities if c != city_a]
-            default_b = other_cities[0] if other_cities else cities[0]
-            city_b = st.selectbox("选择城市 B", cities, index=cities.index(default_b), key="city_b")
+        selected_year_pk = st.session_state.get('selected_year', 2022)
+        df_year_pk = df_main[df_main['年份'] == selected_year_pk]
+        city_avg_pk = df_year_pk.groupby('城市')[pollutant].mean().reset_index().sort_values(pollutant)
 
-        # 获取两城当年数据
-        data_a = df_year_pk[df_year_pk['城市'] == city_a][pollutant].mean()
-        data_b = df_year_pk[df_year_pk['城市'] == city_b][pollutant].mean()
-        rank_a = list(city_avg_pk['城市']).index(city_a) + 1
-        rank_b = list(city_avg_pk['城市']).index(city_b) + 1
+        if len(cities) >= 2:
+            col_a, col_b = st.columns(2)
+            with col_a:
+                city_a = st.selectbox("选择城市 A", cities, key="city_a")
+            with col_b:
+                other_cities = [c for c in cities if c != city_a]
+                default_b = other_cities[0] if other_cities else cities[0]
+                city_b = st.selectbox("选择城市 B", cities, index=cities.index(default_b), key="city_b")
 
-        # 指标卡片
-        c1, c2, c3 = st.columns(3)
-        c1.metric(f"🌫️ {city_a}", f"{data_a:.1f} μg/m³", f"排名 {rank_a}")
-        c2.metric(f"🌫️ {city_b}", f"{data_b:.1f} μg/m³", f"排名 {rank_b}")
-        diff = data_a - data_b
-        c3.metric("📊 差值", f"{abs(diff):.1f} μg/m³", delta=f"{city_a} 比 {city_b} {'高' if diff > 0 else '低'}", delta_color="inverse")
+            data_a = df_year_pk[df_year_pk['城市'] == city_a][pollutant].mean()
+            data_b = df_year_pk[df_year_pk['城市'] == city_b][pollutant].mean()
+            rank_a = list(city_avg_pk['城市']).index(city_a) + 1
+            rank_b = list(city_avg_pk['城市']).index(city_b) + 1
 
-        # 双城趋势线叠加
-        trend_a = df_main[df_main['城市'] == city_a].groupby('年份')[pollutant].mean()
-        trend_b = df_main[df_main['城市'] == city_b].groupby('年份')[pollutant].mean()
-        fig_dual = go.Figure()
-        fig_dual.add_trace(go.Scatter(x=trend_a.index, y=trend_a.values,
-                                      mode='lines+markers', name=city_a,
-                                      line=dict(color='#2e7d32', width=2)))
-        fig_dual.add_trace(go.Scatter(x=trend_b.index, y=trend_b.values,
-                                      mode='lines+markers', name=city_b,
-                                      line=dict(color='#ff8c00', width=2)))
-        fig_dual.update_layout(title=f"{city_a} vs {city_b} 年度趋势对比",
-                               yaxis_title=f"{pollutant} (μg/m³)")
-        st.plotly_chart(fig_dual, use_container_width=True)
+            c1, c2, c3 = st.columns(3)
+            c1.metric(f"🌫️ {city_a}", f"{data_a:.1f} μg/m³", f"排名 {rank_a}")
+            c2.metric(f"🌫️ {city_b}", f"{data_b:.1f} μg/m³", f"排名 {rank_b}")
+            diff = data_a - data_b
+            c3.metric("📊 差值", f"{abs(diff):.1f} μg/m³",
+                      delta=f"{city_a} 比 {city_b} {'高' if diff > 0 else '低'}",
+                      delta_color="inverse")
 
-        # 简要结论
-        if data_a < data_b:
-            verdict = f"{city_a} 的空气质量优于 {city_b}，年均浓度低 {abs(diff):.1f} μg/m³。"
+            trend_a = df_main[df_main['城市'] == city_a].groupby('年份')[pollutant].mean()
+            trend_b = df_main[df_main['城市'] == city_b].groupby('年份')[pollutant].mean()
+            fig_dual = go.Figure()
+            fig_dual.add_trace(go.Scatter(x=trend_a.index, y=trend_a.values,
+                                          mode='lines+markers', name=city_a,
+                                          line=dict(color='#2e7d32', width=2)))
+            fig_dual.add_trace(go.Scatter(x=trend_b.index, y=trend_b.values,
+                                          mode='lines+markers', name=city_b,
+                                          line=dict(color='#ff8c00', width=2)))
+            fig_dual.update_layout(title=f"{city_a} vs {city_b} 年度趋势对比",
+                                   yaxis_title=f"{pollutant} (μg/m³)")
+            st.plotly_chart(fig_dual, use_container_width=True)
+
+            verdict = f"{city_a} 优于 {city_b}" if data_a < data_b else f"{city_b} 优于 {city_a}"
+            st.caption(f"📌 {verdict}，年均浓度低 {abs(diff):.1f} μg/m³。")
         else:
-            verdict = f"{city_b} 的空气质量优于 {city_a}，年均浓度低 {abs(diff):.1f} μg/m³。"
-        st.caption(f"📌 {verdict}")
-    else:
-        st.info("请至少在侧边栏选择两个城市，才能进行双城PK对比。")
+            st.info("请至少在侧边栏选择两个城市，才能进行双城PK对比。")
 
+        # 城市差异解读（保留）
         st.markdown("---")
         st.subheader("城市差异解读")
         if pollutant == 'PM2.5':
@@ -461,39 +410,6 @@ else:
         """, unsafe_allow_html=True)
     else:
         st.info("请在侧边栏至少选择一个城市。")
-        # ==================== 原有季节性规律解读（保留） ====================
-    st.markdown("---")
-    st.subheader("📊 季节性规律总结")
-
-    winter_avg = month_avg[month_avg['月份'].isin([12, 1, 2])][pollutant].mean()
-    summer_avg = month_avg[month_avg['月份'].isin([6, 7, 8])][pollutant].mean()
-
-    # 动态判断峰值季节
-    if pollutant == 'O3':
-        peak_season, trough_season = "夏季", "冬季"
-        peak_reason = "高温强辐射促进光化学反应生成O₃，同时植物源VOCs排放增加"
-        trough_reason = "太阳辐射弱，光化学反应减弱"
-    elif pollutant == 'PM2.5':
-        peak_season, trough_season = "冬季", "夏季"
-        peak_reason = "燃煤取暖、逆温层和静稳天气导致污染物累积"
-        trough_reason = "降水冲刷和大气扩散条件好"
-    else:
-        peak_season, trough_season = "冬季", "夏季"
-        peak_reason = "采暖期排放增加及不利扩散条件"
-        trough_reason = "大气扩散能力增强"
-
-    ratio = max(winter_avg, summer_avg) / min(winter_avg, summer_avg)
-
-st.markdown(f"""
-<div style="background-color:#f0f2f6; padding:20px; border-radius:10px;">
-<h4>{peak_season}高{trough_season}低：{peak_season}浓度是{trough_season}的{ratio:.1f}倍</h4>
-<ul>
-    <li><b>{peak_season}峰值原因</b>：{peak_reason}。</li>
-    <li><b>{trough_season}谷值原因</b>：{trough_reason}。</li>
-</ul>
-<p><b>启示</b>：应重点关注{peak_season}的{pollutant}管控，持续减排并完善应急响应。</p>
-</div>
-""", unsafe_allow_html=True)
 
 # ========== 页面末尾知识小贴士 ==========
 st.markdown("---")
