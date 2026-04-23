@@ -15,9 +15,6 @@ if 'df_main' not in st.session_state:
     st.stop()
 
 df_main = st.session_state['df_main']
-pollutant = st.session_state.get('pollutant', 'PM2.5')
-
-st.title(f"📈 {pollutant}趋势分析与预测")
 
 # 侧边栏
 st.sidebar.header("分析选项")
@@ -35,6 +32,7 @@ pollutant = st.sidebar.selectbox(
     index=default_index,
     key="pollutant_selector_deep"
 )
+st.title(f"📈 {pollutant}趋势分析与预测")
 # 更新全局状态
 st.session_state['pollutant'] = pollutant
 # ---------- 1. 年度趋势与预测 ----------
