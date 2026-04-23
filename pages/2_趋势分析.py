@@ -210,16 +210,16 @@ elif analysis_type == "季节性规律":
     selected_season = None
     for i, (col, s) in enumerate(zip(cols, seasons)):
         with col:
-            st.markdown(f"""
-            <div class="season-card" id="season{i}">
-                <div class="season-icon">{['icon']}</div>
-                <div class="season-name">{['name']}季</div>
-                <div class="season-avg">{['avg']:.1f} <small>μg/m³</small></div>
+            card_html = """
+            <div class="season-card" id="season{idx}">
+                <div class="season-icon">{icon}</div>
+                <div class="season-name">{name}季</div>
+                <div class="season-avg">{avg:.1f} <small>μg/m³</small></div>
             </div>
-            """, unsafe_allow_html=True)
-            if st.button(f"查看{['name']}季详情", key=f"season_btn_{i}"):
+            """.format(idx=i, icon=s['icon'], name=s['name'], avg=s['avg'])
+            st.markdown(card_html, unsafe_allow_html=True)
+            if st.button("查看{name}季详情".format(name=s['name']), key="season_btn_{}".format(i)):
                 selected_season = s['name']
-
     if selected_season:
         st.markdown("---")
         st.subheader(f"{selected_season}季 {pollutant} 深度解读")
