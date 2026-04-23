@@ -331,7 +331,7 @@ else:
                       title=f"所选城市{pollutant}年度趋势对比")
         st.plotly_chart(fig, use_container_width=True)
 
-               # ====== 健康与出行建议 ======
+        # ====== 健康与出行建议 ======
         st.markdown("---")
         st.subheader("🛡️ 健康与出行建议")
 
@@ -397,8 +397,8 @@ else:
             '<div style="background:#f9fafb; border-radius:16px; padding:20px; '
             'border-left:6px solid {color}; margin-bottom:20px;">'
             '<h4 style="margin-top:0;">{icon} {status}</h4>'
-            '<p style="font-size:16px;">以 <b>{city}</b> 的 {pol} 浓度（{val:.1f} g/m）为参考：</p>'
-            '<p style="font-weight:bold;"> {sug}</p>'
+            '<p style="font-size:16px;">以 <b>{city}</b> 的 {pol} 浓度（{val:.1f} μg/m³）为参考：</p>'
+            '<p style="font-weight:bold;">💡 {sug}</p>'
             '</div>'
         ).format(
             color=border_color,
