@@ -64,6 +64,58 @@ if analysis_type == "年度趋势与预测":
     val_2022 = national[national['年份'] == 2022][pollutant].values[0]
     decline = (val_2013 - val_2022) / val_2013 * 100
 
+    # ==================== 新增：政策时间线、小贴士、关联事件轴 ====================
+    st.markdown("---")
+    st.subheader("📜 政策与事件时间线")
+    col_t1, col_t2, col_t3 = st.columns(3)
+    with col_t1:
+        st.markdown("""
+        <div style="background-color:#e8f5e9; padding:12px; border-radius:10px; text-align:center;">
+        <b>2013年</b><br>《大气污染防治行动计划》<br>（“大气十条”）<br>🟢 全面治霾
+        </div>
+        """, unsafe_allow_html=True)
+    with col_t2:
+        st.markdown("""
+        <div style="background-color:#fff3e0; padding:12px; border-radius:10px; text-align:center;">
+        <b>2018年</b><br>《打赢蓝天保卫战<br>三年行动计划》<br>🟠 强化措施
+        </div>
+        """, unsafe_allow_html=True)
+    with col_t3:
+        st.markdown("""
+        <div style="background-color:#fce4ec; padding:12px; border-radius:10px; text-align:center;">
+        <b>2020-2022年</b><br>疫情与后疫情<br>经济活动波动<br>🔴 异常反弹
+        </div>
+        """, unsafe_allow_html=True)
+
+    # 小贴士
+    tips = {
+        'PM2.5': "💡 **你知道吗？** PM2.5 直径不到头发丝的 1/20，可深入肺部进入血液。冬季燃煤和机动车尾气是主要人为源。",
+        'PM10': "💡 **你知道吗？** PM10 主要来自道路扬尘、建筑施工和沙尘暴。口罩可以阻挡大部分 PM10 颗粒。",
+        'So2': "💡 **你知道吗？** SO₂ 主要来自燃煤和工业过程，是酸雨的主要原因。我国近年 SO₂ 下降幅度最大。",
+        'No2': "💡 **你知道吗？** NO₂ 主要来自机动车尾气，高峰时段与交通拥堵密切相关，是城市“汽车尾气”的标志物。",
+        'O3': "💡 **你知道吗？** O₃ 在平流层是“保护伞”，但在地面却是污染物，夏季高温强辐射时浓度最高，对呼吸道有刺激作用。"
+    }
+    tip_text = tips.get(pollutant, f"💡 **你知道吗？** {pollutant}是空气质量的重要指标，长期监测有助于改善公众健康。")
+    st.info(tip_text)
+
+    # 关联事件轴
+    st.markdown("---")
+    st.subheader("⏳ 关联事件解读")
+    st.markdown("""
+    <div style="background-color:#f3e5f5; padding:12px; border-radius:10px; border-left:4px solid #9c27b0;">
+    <ul>
+        <li><b>2013</b>：华北雾霾大爆发，“大气十条”出台，拉开治理序幕</li>
+        <li><b>2016-2017</b>：京津冀及周边“2+26”城市强化大气污染防治</li>
+        <li><b>2020</b>：疫情封控期间，交通和工业排放骤减，PM2.5短暂大幅下降</li>
+        <li><b>2022</b>：经济活动恢复，叠加沙尘天气，部分城市PM2.5反弹</li>
+    </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ==================== 原有解读（保留） ====================
+    st.markdown("---")
+    st.subheader("📊 趋势解读")
+
     # 动态解读文字
     if pollutant == 'PM2.5':
         reason_2013 = "《大气污染防治行动计划》实施，大规模推进燃煤锅炉淘汰和工业提标改造"
@@ -82,8 +134,6 @@ if analysis_type == "年度趋势与预测":
         reason_2018 = "污染防治攻坚战深入"
         reason_2022 = "经济活动回升带来短期波动"
 
-    st.markdown("---")
-    st.subheader("趋势解读")
     st.markdown(f"""
     <div style="background-color:#f0f2f6; padding:20px; border-radius:10px;">
     <h4>十年变化，2022年出现波动</h4>
@@ -95,7 +145,6 @@ if analysis_type == "年度趋势与预测":
     <p><b>预测显示</b>：若当前下降趋势延续，2026年全国{pollutant}年均浓度有望降至 <b>{future_pred[-1]:.1f} μg/m³</b>，但需警惕反弹风险。</p>
     </div>
     """, unsafe_allow_html=True)
-
 # ---------- 2. 季节性规律 ----------
 elif analysis_type == "季节性规律":
     st.header(f"{pollutant}月度变化规律")
