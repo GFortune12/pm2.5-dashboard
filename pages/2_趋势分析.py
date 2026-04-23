@@ -1,75 +1,75 @@
-导入streamlit作为st streamlit 作为 st
-导入pandas作为pd pandas as pd
-进口的阴谋。Graph_objects plotly.graph_objects as go
-进口的阴谋。表示为px plotly.表达 as px
-从sklearn。linear_model导入LinearRegression sklearn.linear_model import LinearRegression
-将numpy导入为np numpy as np
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
+from sklearn.linear_model import LinearRegression
+import numpy as np
 
 st.set_page_config(page_title="趋势分析", layout="wide")
-导入系统 sys
+import sys
 sys.path.append('../')  # 确保能找到 styles 模块（因为 pages 在子目录）
-从样式中导入apply_custom_styles style import apply_custom_styles
+from style import apply_custom_styles
 apply_custom_styles()
-如果` df_main `不在st.session_state中： 'df_main' not 在 st.session_state:
+if 'df_main' not in st.session_state:
     st.error("请先返回主页加载数据！")
     st.stop()
 
-Df_main = st.session_state
+df_main = st.session_state['df_main']
 
 # 侧边栏
-st.侧边栏.头("分析选项")
-Analysis_type = st.侧边栏.radio(
+st.sidebar.header("分析选项")
+analysis_type = st.sidebar.radio(
     "选择分析维度",
     ["年度趋势与预测", "季节性规律", "城市对比"]
 )
 # 污染物切换（与主页同步）
-pollutant_options = [PM2.5,可吸入颗粒物,二氧化硫,二氧化氮,O3的“O3”
-current_污染物= st.“PM2.5”(“污染物”,PM2.5)
-Default_index = options。如果current_污染物存在于options中，则索引(current_污染物
-污染物= st.侧边栏.选择框(
+pollutant_options = ['PM2.5', 'PM10', 'So2', 'No2', 'O3']
+current_pollutant = st.session_state.get('pollutant', 'PM2.5')
+default_index = pollutant_options.index(current_pollutant) if current_pollutant in pollutant_options else 0
+pollutant = st.sidebar.selectbox(
     "选择污染物",
     pollutant_options,
     index=default_index,
-key="pollutant_selector_deep"
+    key="pollutant_selector_deep"
 )
 st.title(f"📈 {pollutant}趋势分析与预测")
 # 更新全局状态
-St.session_state[‘污染物’]=污染物
+st.session_state['pollutant'] = pollutant
 # ---------- 1. 年度趋势与预测 ----------
 if analysis_type == "年度趋势与预测":
     st.header(f"{pollutant}年度趋势与预测（2013-2026）")
 
-National = df_main.groupby（‘年份’）[污染物].的意思是().reset_index ()
+    national = df_main.groupby('年份')[pollutant].mean().reset_index()
 
     X = national['年份'].values.reshape(-1, 1)
-Y =国家[污染物].值
-model = LinearRegression（）
+    y = national[pollutant].values
+    model = LinearRegression()
     model.fit(X, y)
 
-Future_years = np数组（[2023,2024,2025,2026]）。重塑(1,1)
-Future_pred = model.predict（future_years）
+    future_years = np.array([2023, 2024, 2025, 2026]).reshape(-1, 1)
+    future_pred = model.predict(future_years)
 
-FIG = go。图()
+    fig = go.Figure()
     fig.add_trace(go.Scatter(x=national['年份'], y=national[pollutant],
                              mode='lines+markers', name='历史数据',
-行= 字典(颜色= # 2 e7d32,宽度= 3)))
-fig.add_trace(走。散点(x = future_years。平（），y = future_pred，
+                             line=dict(color='#2e7d32', width=3)))
+    fig.add_trace(go.Scatter(x=future_years.flatten(), y=future_pred,
                              mode='lines+markers', name='预测趋势',
-行= dict(颜色= # ff8c00,宽度= 3,破折号=“冲刺”)))
+                             line=dict(color='#ff8c00', width=3, dash='dash')))
     fig.update_layout(yaxis_title=f"{pollutant} (μg/m³)", xaxis_title="年份",
                       title=f"全国{pollutant}年度趋势及线性预测")
-use_container_width = 真正的 st.plotly_chart(图)
+    st.plotly_chart(fig, use_container_width=True)
 
     val_2013 = national[national['年份'] == 2013][pollutant].values[0]
     val_2022 = national[national['年份'] == 2022][pollutant].values[0]
     decline = (val_2013 - val_2022) / val_2013 * 100
 
     # 动态解读文字
-若污染物== 'PM2.5'：
+    if pollutant == 'PM2.5':
         reason_2013 = "《大气污染防治行动计划》实施，大规模推进燃煤锅炉淘汰和工业提标改造"
         reason_2018 = "《打赢蓝天保卫战三年行动计划》接续发力，清洁取暖成效显著"
         reason_2022 = "疫情后工业恢复、沙尘天气增多、部分区域管控力度有所松懈"
-elif污染物== 'O3'：
+    elif pollutant == 'O3':
         reason_2013 = "前体物（NOx和VOCs）排放仍处于高位，O₃生成潜势大"
         reason_2018 = "部分区域推行VOCs与NOx协同减排，但O₃浓度仍呈波动上升态势"
         reason_2022 = "高温强辐射天气频发，光化学反应加剧，叠加前体物排放未根本削减"
@@ -85,7 +85,7 @@ elif污染物== 'O3'：
     st.markdown("---")
     st.subheader("趋势解读")
     st.markdown(f"""
-& lt; div风格=“background - color: # f0f2f6;填充:20 px;border - radius: 10 px;“比;
+    <div style="background-color:#f0f2f6; padding:20px; border-radius:10px;">
     <h4>十年变化，2022年出现波动</h4>
     <ul>
         <li><b>2013-2017年（快速下降期）</b>：{pollutant}从{val_2013:.1f} μg/m³显著下降。主要得益于{reason_2013}。</li>
@@ -100,8 +100,8 @@ elif污染物== 'O3'：
 elif analysis_type == "季节性规律":
     st.header(f"{pollutant}月度变化规律")
 
-    month_avg = df_main.作为('月份')[pollutant].mean().reset_index()
-FIG = px。line(month_avg, x=‘月份’，y=污染物，marker =True，
+    month_avg = df_main.groupby('月份')[pollutant].mean().reset_index()
+    fig = px.line(month_avg, x='月份', y=pollutant, markers=True,
                   title=f"全国{pollutant}月度平均浓度")
     fig.update_xaxes(tickvals=list(range(1, 13)))
     fig.update_traces(line=dict(color='#1565c0', width=3))
