@@ -398,16 +398,16 @@ else:
 
     ratio = max(winter_avg, summer_avg) / min(winter_avg, summer_avg)
 
-    st.markdown(f"""
-    <div style="background-color:#f0f2f6; padding:20px; border-radius:10px;">
-    <h4>{peak_season}高{trough_season}低：{peak_season}浓度是{trough_season}的{ratio:.1f}倍</h4>
-    <ul>
-        <li><b>{peak_season}峰值原因</b>：{peak_reason}。</li>
-        <li><b>{trough_season}谷值原因</b>：{trough_reason}。</li>
-    </ul>
-    <p><b>启示</b>：应重点关注{peak_season}的{pollutant}管控，持续减排并完善应急响应。</p>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown(f"""
+<div style="background-color:#f0f2f6; padding:20px; border-radius:10px;">
+<h4>{peak_season}高{trough_season}低：{peak_season}浓度是{trough_season}的{ratio:.1f}倍</h4>
+<ul>
+    <li><b>{peak_season}峰值原因</b>：{peak_reason}。</li>
+    <li><b>{trough_season}谷值原因</b>：{trough_reason}。</li>
+</ul>
+<p><b>启示</b>：应重点关注{peak_season}的{pollutant}管控，持续减排并完善应急响应。</p>
+</div>
+""", unsafe_allow_html=True)
 
 # ========== 页面末尾知识小贴士 ==========
 st.markdown("---")
