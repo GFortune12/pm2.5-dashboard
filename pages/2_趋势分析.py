@@ -187,10 +187,18 @@ if analysis_type == "年度趋势与预测":
     """, unsafe_allow_html=True)
 # ---------- 2. 季节性规律 ----------
 elif analysis_type == "季节性规律":
-    st.header(f"{pollutant} 四季变化透析")
+    st.header(f"{pollutant} 月度变化与四季解读")
 
+    # -------- 原有月度平均折线图（保留） --------
+    month_avg = df_main.groupby('月份')[pollutant].mean().reset_index()
+    fig = px.line(month_avg, x='月份', y=pollutant, markers=True,
+                  title=f"全国{pollutant}月度平均浓度")
+    fig.update_xaxes(tickvals=list(range(1, 13)))
+    fig.update_traces(line=dict(color='#1565c0', width=3))
+    st.plotly_chart(fig, use_container_width=True)
+
+    # -------- 四季卡片数据准备 --------
     df_season = df_main.copy()
-    # 定义季节映射
     def get_season(month):
         if month in [3, 4, 5]:
             return '春'
@@ -203,7 +211,7 @@ elif analysis_type == "季节性规律":
     df_season['季节'] = df_season['月份'].apply(get_season)
     season_avg = df_season.groupby('季节')[pollutant].mean().reindex(['春', '夏', '秋', '冬'])
 
-    # 季节卡片数据
+    # 季节卡片信息
     seasons = [
         {"name": "春", "icon": "🌸", "avg": season_avg.get('春', 0)},
         {"name": "夏", "icon": "☀️", "avg": season_avg.get('夏', 0)},
@@ -211,7 +219,7 @@ elif analysis_type == "季节性规律":
         {"name": "冬", "icon": "❄️", "avg": season_avg.get('冬', 0)}
     ]
 
-    # 自定义CSS实现卡片悬停效果
+    # 卡片悬停样式
     st.markdown("""
     <style>
     .season-card {
@@ -247,6 +255,156 @@ elif analysis_type == "季节性规律":
     </style>
     """, unsafe_allow_html=True)
 
+    # 四个卡片水平排列
+    cols = st.columns(4)
+    selected_season = None
+    for i, (col, s) in enumerate(zip(cols, seasons)):
+        with col:
+            card_html = f"""
+            <div class="season-card" id="season{i}">
+                <div class="season-icon">{s['icon']}</div>
+                <div class="season-name">{s['name']}季</div>
+                <div class="season-avg">{s['avg']:.1f} <small>μg/m³</small></div>
+            </div>
+            """
+            st.markdown(card_html, unsafe_allow_html=True)
+            if st.button(f"查看{s['name']}季详情", key=f"season_btn_{i}"):
+                selected_season = s['name']
+
+    # -------- 点击卡片后展示详情 --------
+    if selected_season:
+        st.markdown("---")
+        st.subheader(f"{selected_season}季 {pollutant} 深度解读")
+
+        # 区域代表城市
+        north_cities = ['北京', '天津', '石家庄', '太原', '沈阳']
+        south_cities = ['广州', '深圳', '福州', '南宁', '海口']
+        west_cities = ['拉萨', '西宁', '银川', '乌鲁木齐', '昆明']
+        def season_city_avg(cities, season):
+            return df_season[(df_season['季节'] == season) & (df_season['城市'].isin(cities))][pollutant].mean()
+        north_val = season_city_avg(north_cities, selected_season)
+        south_val = season_city_avg(south_cities, selected_season)
+        west_val = season_city_avg(west_cities, selected_season)
+
+        # 动态成因与健康提示
+        reasons = {
+            'PM2.5': {
+                '春': "北方沙尘增多，取暖期刚过，扬尘和残留污染物导致浓度仍较高。",
+                '夏': "降水增多，湿沉降作用显著，空气质量全年最好。",
+                '秋': "秸秆焚烧和静稳天气增加，污染物开始累积。",
+                '冬': "燃煤取暖高峰，逆温层导致污染物不易扩散，浓度达全年最高。"
+            },
+            'O3': {
+                '春': "太阳辐射增强，前体物累积，O₃浓度开始上升。",
+                '夏': "高温强辐射，光化学反应最活跃，O₃浓度全年峰值。",
+                '秋': "辐射减弱，浓度逐步回落。",
+                '冬': "辐射弱，光化学反应减弱，浓度最低。"
+            }
+        }
+        default_reasons = {
+            '春': "排放稳定，气象条件开始转好。",
+            '夏': "扩散条件好，浓度较低。",
+            '秋': "扩散条件转差，浓度有所回升。",
+            '冬': "采暖导致排放增加，浓度最高。"
+        }
+        health_tips = {
+            'PM2.5': {
+                '冬': "减少户外活动，佩戴N95口罩。",
+                '春': "沙尘天注意防护。",
+                '夏': "空气质量好，适宜开窗通风。",
+                '秋': "关注秸秆焚烧，敏感人群减少外出。"
+            }
+        }
+
+        reason = reasons.get(pollutant, default_reasons).get(selected_season, "浓度变化与排放和气象有关。")
+        tip = health_tips.get(pollutant, {}).get(selected_season, "注意防护，关注空气质量预报。")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric(f"{selected_season}季全国均值", f"{season_avg[selected_season]:.1f} μg/m³")
+            st.markdown(f"**成因分析**：{reason}")
+            st.markdown(f"**健康提示**：{tip}")
+        with col2:
+            region_df = pd.DataFrame({
+                '区域': ['华北', '华南', '西部'],
+                '均值': [north_val, south_val, west_val]
+            })
+            fig_region = px.bar(region_df, x='区域', y='均值', color='区域',
+                                title=f"{selected_season}季 {pollutant} 区域对比",
+                                color_discrete_map={'华北': '#d32f2f', '华南': '#388e3c', '西部': '#1976d2'})
+            fig_region.update_layout(showlegend=False)
+            st.plotly_chart(fig_region, use_container_width=True)
+    else:
+        st.info("👆 点击上方任意季节卡片，查看该季节的详细解读和区域对比。")
+
+# ---------- 3. 城市对比 ----------
+else:
+    st.header(f"主要城市{pollutant}历史趋势对比")
+
+    all_cities = sorted(df_main['城市'].unique().tolist())
+    default_cities = ['北京', '上海', '广州', '成都', '石家庄']
+    default_cities = [c for c in default_cities if c in all_cities][:5]
+    cities = st.sidebar.multiselect("选择城市（可多选）", all_cities, default=default_cities)
+
+    if cities:
+        city_trend = df_main[df_main['城市'].isin(cities)].groupby(['年份', '城市'])[pollutant].mean().reset_index()
+        fig = px.line(city_trend, x='年份', y=pollutant, color='城市', markers=True,
+                      title=f"所选城市{pollutant}年度趋势对比")
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown("---")
+        st.subheader("城市差异解读")
+        if pollutant == 'PM2.5':
+            diff_text = """
+            <li><b>改善显著的城市（如北京、上海）</b>：严格执行产业升级、机动车管控和清洁能源替代，治理投入大。</li>
+            <li><b>改善较慢的城市（如石家庄、保定）</b>：地处华北平原，污染物易聚不易散；产业结构偏重。</li>
+            <li><b>西部城市（如拉萨、昆明）</b>：本底值低，无重工业污染，空气质量持续优良。</li>
+            """
+        elif pollutant == 'O3':
+            diff_text = """
+            <li><b>沿海城市（如上海、广州）</b>：受海陆风和区域传输影响，O₃浓度易超标。</li>
+            <li><b>北方城市（如北京、石家庄）</b>：夏季高温强辐射，O₃生成潜势大。</li>
+            <li><b>西部高海拔城市（如拉萨、西宁）</b>：紫外线强，但前体物排放少，O₃浓度相对可控。</li>
+            """
+        else:
+            diff_text = """
+            <li><b>北方工业城市</b>：排放量大，浓度较高。</li>
+            <li><b>南方城市</b>：扩散条件好，浓度较低。</li>
+            <li><b>西部城市</b>：人为活动少，浓度最低。</li>
+            """
+        st.markdown(f"""
+        <div style="background-color:#f0f2f6; padding:20px; border-radius:10px;">
+        <h4>为什么不同城市{pollutant}趋势不同？</h4>
+        <ul>
+            {diff_text}
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.info("请在侧边栏至少选择一个城市。")
+
+        # ========== 知识小贴士（移至末尾）==========
+    st.markdown("---")
+    tips = {
+        'PM2.5': "💡 **你知道吗？** PM2.5 直径不到头发丝的 1/20，可进入肺泡甚至血液循环。减少燃煤和机动车尾气是治理关键。",
+        'PM10': "💡 **你知道吗？** PM10 主要来自道路扬尘和沙尘暴，戴口罩可有效阻挡大部分 PM10。",
+        'So2': "💡 **你知道吗？** SO₂ 是酸雨的主要元凶，我国近十年 SO₂ 降幅是所有污染物中最大的。",
+        'No2': "💡 **你知道吗？** NO₂ 主要来自机动车尾气，早晚高峰浓度明显升高，是城市交通污染的指示灯。",
+        'O3': "💡 **你知道吗？** 地面 O₃ 是“隐形杀手”，夏季午后浓度最高，对儿童和哮喘患者威胁大。"
+    }
+    tip_text = tips.get(pollutant, f"💡 **你知道吗？** {pollutant} 是评价空气质量的重要指标，长期监测有助于保护公众健康。")
+    st.info(tip_text)
+        color: #1b5e20;
+        margin: 8px 0 4px 0;
+    }
+    .season-avg {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2e7d32;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     # 渲染四个季节卡片，点击触发详细解读
     cols = st.columns(4)
     selected_season = None
@@ -256,9 +414,9 @@ elif analysis_type == "季节性规律":
             # 每张卡片用markdown渲染，并加一个不可见的按钮来捕获点击（巧妙方式）
             card_html = f"""
             <div class="season-card" id="season{i}">
-                <div class="season-icon">{s['icon']}</div>
-                <div class="season-name">{s['name']}季</div>
-                <div class="season-avg">{s['avg']:.1f} <small>μg/m³</small></div>
+                <div class="season-icon">{['icon']}</div>
+                <div class="season-name">{['name']}季</div>
+                <div class="season-avg">{['avg']:.1f} <small>μg/m³</small></div>
             </div>
             """
             st.markdown(card_html, unsafe_allow_html=True)
