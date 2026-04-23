@@ -330,18 +330,15 @@ else:
         fig = px.line(city_trend, x='年份', y=pollutant, color='城市', markers=True,
                       title=f"所选城市{pollutant}年度趋势对比")
         st.plotly_chart(fig, use_container_width=True)
-
         # ====== 健康与出行建议 ======
         st.markdown("---")
         st.subheader("🛡️ 健康与出行建议")
-
         # 使用第一个选中城市的浓度作为参考
         if cities:
             first_city = cities[0]
             first_city_val = df_year[df_year['城市'] == first_city][pollutant].mean()
         else:
             first_city_val = 0
-
         def get_advice(pol, val):
             if pol == 'PM2.5':
                 if val < 35:
@@ -409,8 +406,9 @@ else:
             val=first_city_val,
             sug=suggestion
         ), unsafe_allow_html=True)
-
         st.caption("🔔 建议基于国家空气质量标准及世界卫生组织指南，仅供参考。")
+
+
         # 城市差异解读（保留）
         st.markdown("---")
         st.subheader("城市差异解读")
