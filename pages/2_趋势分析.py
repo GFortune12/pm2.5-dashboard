@@ -257,13 +257,13 @@ elif analysis_type == "季节性规律":
         with col:
             card_html = f"""
             <div class="season-card" id="season{i}">
-                <div class="season-icon">{s['icon']}</div>
-                <div class="season-name">{s['name']}季</div>
-                <div class="season-avg">{s['avg']:.1f} <small>μg/m³</small></div>
+                <div class="season-icon">{['icon']}</div>
+                <div class="season-name">{['name']}季</div>
+                <div class="season-avg">{['avg']:.1f} <small>μg/m³</small></div>
             </div>
             """
             st.markdown(card_html, unsafe_allow_html=True)
-            if st.button(f"查看{s['name']}季详情", key=f"season_btn_{i}"):
+            if st.button(f"查看{['name']}季详情", key=f"season_btn_{i}"):
                 selected_season = s['name']
 
     # 点击后详情
@@ -375,6 +375,39 @@ else:
         """, unsafe_allow_html=True)
     else:
         st.info("请在侧边栏至少选择一个城市。")
+        # ==================== 原有季节性规律解读（保留） ====================
+    st.markdown("---")
+    st.subheader("📊 季节性规律总结")
+
+    winter_avg = month_avg[month_avg['月份'].isin([12, 1, 2])][pollutant].mean()
+    summer_avg = month_avg[month_avg['月份'].isin([6, 7, 8])][pollutant].mean()
+
+    # 动态判断峰值季节
+    if pollutant == 'O3':
+        peak_season, trough_season = "夏季", "冬季"
+        peak_reason = "高温强辐射促进光化学反应生成O₃，同时植物源VOCs排放增加"
+        trough_reason = "太阳辐射弱，光化学反应减弱"
+    elif pollutant == 'PM2.5':
+        peak_season, trough_season = "冬季", "夏季"
+        peak_reason = "燃煤取暖、逆温层和静稳天气导致污染物累积"
+        trough_reason = "降水冲刷和大气扩散条件好"
+    else:
+        peak_season, trough_season = "冬季", "夏季"
+        peak_reason = "采暖期排放增加及不利扩散条件"
+        trough_reason = "大气扩散能力增强"
+
+    ratio = max(winter_avg, summer_avg) / min(winter_avg, summer_avg)
+
+    st.markdown(f"""
+    <div style="background-color:#f0f2f6; padding:20px; border-radius:10px;">
+    <h4>{peak_season}高{trough_season}低：{peak_season}浓度是{trough_season}的{ratio:.1f}倍</h4>
+    <ul>
+        <li><b>{peak_season}峰值原因</b>：{peak_reason}。</li>
+        <li><b>{trough_season}谷值原因</b>：{trough_reason}。</li>
+    </ul>
+    <p><b>启示</b>：应重点关注{peak_season}的{pollutant}管控，持续减排并完善应急响应。</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ========== 页面末尾知识小贴士 ==========
 st.markdown("---")
