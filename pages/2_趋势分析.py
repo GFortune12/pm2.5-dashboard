@@ -68,97 +68,54 @@ if analysis_type == "年度趋势与预测":
     st.markdown("---")
     st.subheader("📜 治理历程与关键事件")
 
-    # 注入时间轴CSS
-    st.markdown("""
-    <style>
-    .timeline {
-        position: relative;
-        margin: 20px 0;
-        padding: 0;
-        list-style: none;
-    }
-    .timeline:before {
-        content: '';
-        position: absolute;
-        left: 50%;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-        background: #e0e0e0;
-        transform: translateX(-50%);
-        border-radius: 2px;
-    }
-    .timeline-item {
-        position: relative;
-        margin-bottom: 30px;
-        width: 100%;
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-    }
-    .timeline-item:nth-child(odd) {
-        flex-direction: row;
-    }
-    .timeline-item:nth-child(even) {
-        flex-direction: row-reverse;
-    }
-    .timeline-badge {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: #2e7d32;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 2;
-        font-weight: bold;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-    .timeline-panel {
-        width: 45%;
-        padding: 15px 20px;
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-        border-left: 6px solid #2e7d32;
-    }
-    .timeline-item:nth-child(even) .timeline-panel {
-        border-left: none;
-        border-right: 6px solid #2e7d32;
-        text-align: right;
-    }
-    .timeline-panel h4 {
-        margin-top: 0;
-        color: #1b5e20;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # 时间轴条目（可根据需要扩展）
+    # 两列卡片布局
     events = [
-        {"year": "2013年", "icon": "🟢", "title": "《大气十条》出台",
-         "desc": "国务院发布《大气污染防治行动计划》，要求到2017年全国地级及以上城市PM10浓度比2012年下降10%以上。"},
+        {"year": "2013年", "icon": "🟢", "title": "大气十条出台",
+         "desc": "国务院发布《大气污染防治行动计划》，开启全面治霾。"},
         {"year": "2018年", "icon": "🟠", "title": "蓝天保卫战三年行动",
-         "desc": "《打赢蓝天保卫战三年行动计划》实施，划定“2+26”重点区域，强化联防联控。"},
+         "desc": "划定“2+26”重点区域，强化联防联控。"},
         {"year": "2020年", "icon": "🔵", "title": "疫情临时性改善",
-         "desc": "封控措施导致交通和工业活动骤减，全国PM2.5出现短暂大幅下降。"},
+         "desc": "封控导致交通和工业骤减，PM2.5短暂大幅下降。"},
         {"year": "2022年", "icon": "🔴", "title": "后疫情反弹",
-         "desc": "经济活动恢复叠加沙尘天气，部分区域PM2.5浓度回升，华北尤为明显。"}
+         "desc": "经济恢复叠加沙尘天气，华北PM2.5回升明显。"}
     ]
 
-    for i, ev in enumerate(events):
-        align_class = "timeline-item"
+    row1_col1, row1_col2 = st.columns(2)
+    row2_col1, row2_col2 = st.columns(2)
+
+    # 第一行两个
+    with row1_col1:
+        ev = events[0]
         st.markdown(f"""
-        <div class="{align_class}">
-            <div class="timeline-badge">{ev['icon']}</div>
-            <div class="timeline-panel">
-                <h4>{ev['year']}  {ev['title']}</h4>
-                <p>{ev['desc']}</p>
-            </div>
+        <div style="background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,0.04); border-left:6px solid #2e7d32; margin-bottom:20px;">
+            <h4 style="margin-top:0; color:#1b5e20;">{ev['icon']} {ev['year']}  {ev['title']}</h4>
+            <p style="margin-bottom:0;">{ev['desc']}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with row1_col2:
+        ev = events[1]
+        st.markdown(f"""
+        <div style="background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,0.04); border-left:6px solid #2e7d32; margin-bottom:20px;">
+            <h4 style="margin-top:0; color:#1b5e20;">{ev['icon']} {ev['year']}  {ev['title']}</h4>
+            <p style="margin-bottom:0;">{ev['desc']}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # 第二行两个
+    with row2_col1:
+        ev = events[2]
+        st.markdown(f"""
+        <div style="background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,0.04); border-left:6px solid #2e7d32; margin-bottom:20px;">
+            <h4 style="margin-top:0; color:#1b5e20;">{ev['icon']} {ev['year']}  {ev['title']}</h4>
+            <p style="margin-bottom:0;">{ev['desc']}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with row2_col2:
+        ev = events[3]
+        st.markdown(f"""
+        <div style="background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 4px 12px rgba(0,0,0,0.04); border-left:6px solid #2e7d32; margin-bottom:20px;">
+            <h4 style="margin-top:0; color:#1b5e20;">{ev['icon']} {ev['year']}  {ev['title']}</h4>
+            <p style="margin-bottom:0;">{ev['desc']}</p>
         </div>
         """, unsafe_allow_html=True)
 
