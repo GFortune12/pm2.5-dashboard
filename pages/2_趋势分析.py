@@ -319,7 +319,7 @@ elif analysis_type == "季节性规律":
 # ---------- 3. 城市对比 ----------
 else:
     st.header(f"主要城市{pollutant}历史趋势对比")
-
+//
     all_cities = sorted(df_main['城市'].unique().tolist())
     default_cities = ['北京', '上海', '广州', '成都', '石家庄']
     default_cities = [c for c in default_cities if c in all_cities][:5]
@@ -331,74 +331,86 @@ else:
                       title=f"所选城市{pollutant}年度趋势对比")
         st.plotly_chart(fig, use_container_width=True)
 
-        # ====== 双城PK对比 ======
-                # ====== 城市污染类型聚类 ======
+               # ====== 健康与出行建议 ======
         st.markdown("---")
-        st.subheader("🧬 城市污染类型聚类分析")
+        st.subheader("🛡️ 健康与出行建议")
 
-        from sklearn.cluster import KMeans
-        from sklearn.preprocessing import StandardScaler
-
-        # 用全部年份的均值进行聚类
-        cluster_pollutants = ['PM2.5', 'PM10', 'So2', 'No2', 'O3']
-        cluster_pollutants = [p for p in cluster_pollutants if p in df_main.columns]
-
-        if len(cluster_pollutants) >= 3:
-            city_all_avg = df_main.groupby('城市')[cluster_pollutants].mean().dropna()
-
-            # 标准化
-            scaler = StandardScaler()
-            X_scaled = scaler.fit_transform(city_all_avg)
-
-            # K-Means 聚类（3类）
-            kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
-            city_all_avg['聚类'] = kmeans.fit_predict(X_scaled)
-
-            # 各类别污染物均值
-            cluster_centers = city_all_avg.groupby('聚类')[cluster_pollutants].mean()
-
-            # 雷达图展示各类别指纹
-            fig_cluster = go.Figure()
-            color_map = {0: '#3498db', 1: '#e74c3c', 2: '#2ecc71'}
-            for c in cluster_centers.index:
-                fig_cluster.add_trace(go.Scatterpolar(
-                    r=cluster_centers.loc[c].values,
-                    theta=cluster_pollutants,
-                    fill='toself',
-                    name=f'类型{c}',
-                    line=dict(color=color_map.get(c, '#95a5a6'))
-                ))
-            fig_cluster.update_layout(
-                polar=dict(radialaxis=dict(visible=True)),
-                title="各污染类型污染物指纹特征"
-            )
-            st.plotly_chart(fig_cluster, use_container_width=True)
-            st.caption("💡 阅读方法：每个彩色多边形代表一类城市的平均污染指纹。轴上的数值越大，该污染物浓度越高；形状相似的城市属于同一污染类型。")
-
-            # 显示每个选中城市属于哪一类
-            st.markdown("**📍 已选城市分类结果**")
-            for c in cities:
-                if c in city_all_avg.index:
-                    cluster_label = city_all_avg.loc[c, '聚类']
-                    # 根据类别特征给一个描述
-                    pm25_val = city_all_avg.loc[c, 'PM2.5'] if 'PM2.5' in cluster_pollutants else 0
-                    so2_val = city_all_avg.loc[c, 'So2'] if 'So2' in cluster_pollutants else 0
-                    no2_val = city_all_avg.loc[c, 'No2'] if 'No2' in cluster_pollutants else 0
-                    pm10_val = city_all_avg.loc[c, 'PM10'] if 'PM10' in cluster_pollutants else 0
-
-                    if pm25_val > 50 and so2_val > 20:
-                        type_desc = "煤烟复合型"
-                    elif no2_val > 40:
-                        type_desc = "机动车尾气型"
-                    elif pm10_val > 80:
-                        type_desc = "扬尘/沙尘型"
-                    else:
-                        type_desc = "相对清洁型"
-
-                    st.markdown(f"- {c}：**类型{cluster_label}**（{type_desc}）")
+        # 使用第一个选中城市的浓度作为参考
+        if cities:
+            first_city = cities[0]
+            first_city_val = df_year[df_year['城市'] == first_city][pollutant].mean()
         else:
-            st.info("数据中缺少足够的污染物列，无法进行聚类分析。")
+            first_city_val = 0
 
+        def get_advice(pol, val):
+            if pol == 'PM2.5':
+                if val < 35:
+                    return ("空气质量优良", "适宜户外运动，开窗通风。", "#2ecc71")
+                elif val < 75:
+                    return ("空气质量良好", "正常活动，极少数敏感人群减少户外活动。", "#f1c40f")
+                elif val < 115:
+                    return ("轻度污染", "敏感人群（儿童、老人、呼吸道疾病患者）减少户外活动。", "#e67e22")
+                elif val < 150:
+                    return ("中度污染", "公众减少户外活动，佩戴口罩。", "#e74c3c")
+                elif val < 250:
+                    return ("重度污染", "停止户外活动，必须外出时佩戴N95口罩。", "#8e44ad")
+                else:
+                    return ("严重污染", "避免外出，关闭门窗，开启空气净化器。", "#2c3e50")
+            elif pol == 'O3':
+                if val < 100:
+                    return ("臭氧浓度正常", "安全，无需特殊防护。", "#2ecc71")
+                elif val < 160:
+                    return ("臭氧轻度污染", "午后减少户外活动，敏感人群注意防护。", "#e67e22")
+                elif val < 200:
+                    return ("臭氧中度污染", "午后避免户外活动，关闭窗户。", "#e74c3c")
+                else:
+                    return ("臭氧重度污染", "全天减少外出，必须外出时佩戴活性炭口罩。", "#8e44ad")
+            elif pol == 'PM10':
+                if val < 50:
+                    return ("颗粒物浓度正常", "安全。", "#2ecc71")
+                elif val < 150:
+                    return ("轻度扬尘污染", "沙尘天气佩戴口罩，减少户外停留。", "#e67e22")
+                elif val < 250:
+                    return ("中度扬尘污染", "避免户外活动，关闭门窗。", "#e74c3c")
+                else:
+                    return ("强沙尘暴", "严禁外出，关闭门窗，使用空气净化器。", "#8e44ad")
+            elif pol == 'So2':
+                if val < 50:
+                    return ("SO2浓度正常", "安全。", "#2ecc71")
+                elif val < 150:
+                    return ("SO2浓度偏高", "敏感人群减少户外活动。", "#e67e22")
+                else:
+                    return ("SO2浓度较高", "减少外出，佩戴口罩。", "#e74c3c")
+            elif pol == 'No2':
+                if val < 40:
+                    return ("NO2浓度正常", "安全。", "#2ecc71")
+                elif val < 80:
+                    return ("NO2浓度偏高", "交通繁忙路段避免长时间停留，敏感人群减少外出。", "#e67e22")
+                else:
+                    return ("NO2浓度较高", "减少户外活动，注意呼吸道防护。", "#e74c3c")
+            else:
+                return ("数据参考", "请关注官方空气质量预报。", "#95a5a6")
+
+        status, suggestion, border_color = get_advice(pollutant, first_city_val)
+
+        st.markdown((
+            '<div style="background:#f9fafb; border-radius:16px; padding:20px; '
+            'border-left:6px solid {color}; margin-bottom:20px;">'
+            '<h4 style="margin-top:0;">{icon} {status}</h4>'
+            '<p style="font-size:16px;">以 <b>{city}</b> 的 {pol} 浓度（{val:.1f} g/m）为参考：</p>'
+            '<p style="font-weight:bold;"> {sug}</p>'
+            '</div>'
+        ).format(
+            color=border_color,
+            icon="✅" if "优良" in status or "正常" in status else "⚠️",
+            status=status,
+            city=first_city,
+            pol=pollutant,
+            val=first_city_val,
+            sug=suggestion
+        ), unsafe_allow_html=True)
+
+        st.caption("🔔 建议基于国家空气质量标准及世界卫生组织指南，仅供参考。")
         # 城市差异解读（保留）
         st.markdown("---")
         st.subheader("城市差异解读")
