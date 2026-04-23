@@ -66,51 +66,101 @@ if analysis_type == "年度趋势与预测":
 
     # ==================== 新增：政策时间线、小贴士、关联事件轴 ====================
     st.markdown("---")
-    st.subheader("📜 政策与事件时间线")
-    col_t1, col_t2, col_t3 = st.columns(3)
-    with col_t1:
-        st.markdown("""
-        <div style="background-color:#e8f5e9; padding:12px; border-radius:10px; text-align:center;">
-        <b>2013年</b><br>《大气污染防治行动计划》<br>（“大气十条”）<br>🟢 全面治霾
-        </div>
-        """, unsafe_allow_html=True)
-    with col_t2:
-        st.markdown("""
-        <div style="background-color:#fff3e0; padding:12px; border-radius:10px; text-align:center;">
-        <b>2018年</b><br>《打赢蓝天保卫战<br>三年行动计划》<br>🟠 强化措施
-        </div>
-        """, unsafe_allow_html=True)
-    with col_t3:
-        st.markdown("""
-        <div style="background-color:#fce4ec; padding:12px; border-radius:10px; text-align:center;">
-        <b>2020-2022年</b><br>疫情与后疫情<br>经济活动波动<br>🔴 异常反弹
-        </div>
-        """, unsafe_allow_html=True)
+    st.subheader("📜 治理历程与关键事件")
 
-    # 小贴士
-    tips = {
-        'PM2.5': "💡 **你知道吗？** PM2.5 直径不到头发丝的 1/20，可深入肺部进入血液。冬季燃煤和机动车尾气是主要人为源。",
-        'PM10': "💡 **你知道吗？** PM10 主要来自道路扬尘、建筑施工和沙尘暴。口罩可以阻挡大部分 PM10 颗粒。",
-        'So2': "💡 **你知道吗？** SO₂ 主要来自燃煤和工业过程，是酸雨的主要原因。我国近年 SO₂ 下降幅度最大。",
-        'No2': "💡 **你知道吗？** NO₂ 主要来自机动车尾气，高峰时段与交通拥堵密切相关，是城市“汽车尾气”的标志物。",
-        'O3': "💡 **你知道吗？** O₃ 在平流层是“保护伞”，但在地面却是污染物，夏季高温强辐射时浓度最高，对呼吸道有刺激作用。"
-    }
-    tip_text = tips.get(pollutant, f"💡 **你知道吗？** {pollutant}是空气质量的重要指标，长期监测有助于改善公众健康。")
-    st.info(tip_text)
-
-    # 关联事件轴
-    st.markdown("---")
-    st.subheader("⏳ 关联事件解读")
+    # 注入时间轴CSS
     st.markdown("""
-    <div style="background-color:#f3e5f5; padding:12px; border-radius:10px; border-left:4px solid #9c27b0;">
-    <ul>
-        <li><b>2013</b>：华北雾霾大爆发，“大气十条”出台，拉开治理序幕</li>
-        <li><b>2016-2017</b>：京津冀及周边“2+26”城市强化大气污染防治</li>
-        <li><b>2020</b>：疫情封控期间，交通和工业排放骤减，PM2.5短暂大幅下降</li>
-        <li><b>2022</b>：经济活动恢复，叠加沙尘天气，部分城市PM2.5反弹</li>
-    </ul>
-    </div>
+    <style>
+    .timeline {
+        position: relative;
+        margin: 20px 0;
+        padding: 0;
+        list-style: none;
+    }
+    .timeline:before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #e0e0e0;
+        transform: translateX(-50%);
+        border-radius: 2px;
+    }
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+    }
+    .timeline-item:nth-child(odd) {
+        flex-direction: row;
+    }
+    .timeline-item:nth-child(even) {
+        flex-direction: row-reverse;
+    }
+    .timeline-badge {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #2e7d32;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        font-weight: bold;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .timeline-panel {
+        width: 45%;
+        padding: 15px 20px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        border-left: 6px solid #2e7d32;
+    }
+    .timeline-item:nth-child(even) .timeline-panel {
+        border-left: none;
+        border-right: 6px solid #2e7d32;
+        text-align: right;
+    }
+    .timeline-panel h4 {
+        margin-top: 0;
+        color: #1b5e20;
+    }
+    </style>
     """, unsafe_allow_html=True)
+
+    # 时间轴条目（可根据需要扩展）
+    events = [
+        {"year": "2013年", "icon": "🟢", "title": "《大气十条》出台",
+         "desc": "国务院发布《大气污染防治行动计划》，要求到2017年全国地级及以上城市PM10浓度比2012年下降10%以上。"},
+        {"year": "2018年", "icon": "🟠", "title": "蓝天保卫战三年行动",
+         "desc": "《打赢蓝天保卫战三年行动计划》实施，划定“2+26”重点区域，强化联防联控。"},
+        {"year": "2020年", "icon": "🔵", "title": "疫情临时性改善",
+         "desc": "封控措施导致交通和工业活动骤减，全国PM2.5出现短暂大幅下降。"},
+        {"year": "2022年", "icon": "🔴", "title": "后疫情反弹",
+         "desc": "经济活动恢复叠加沙尘天气，部分区域PM2.5浓度回升，华北尤为明显。"}
+    ]
+
+    for i, ev in enumerate(events):
+        align_class = "timeline-item"
+        st.markdown(f"""
+        <div class="{align_class}">
+            <div class="timeline-badge">{ev['icon']}</div>
+            <div class="timeline-panel">
+                <h4>{ev['year']}  {ev['title']}</h4>
+                <p>{ev['desc']}</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     # ==================== 原有解读（保留） ====================
     st.markdown("---")
