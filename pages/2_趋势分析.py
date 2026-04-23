@@ -220,6 +220,7 @@ elif analysis_type == "季节性规律":
             st.markdown(card_html, unsafe_allow_html=True)
             if st.button("查看{name}季详情".format(name=s['name']), key="season_btn_{}".format(i)):
                 selected_season = s['name']
+
     if selected_season:
         st.markdown("---")
         st.subheader(f"{selected_season}季 {pollutant} 深度解读")
@@ -319,7 +320,11 @@ elif analysis_type == "季节性规律":
 # ---------- 3. 城市对比 ----------
 else:
     st.header(f"主要城市{pollutant}历史趋势对比")
-//
+
+    # 获取当前年份（与主页同步）
+    selected_year = st.session_state.get('selected_year', 2022)
+    df_year = df_main[df_main['年份'] == selected_year]
+
     all_cities = sorted(df_main['城市'].unique().tolist())
     default_cities = ['北京', '上海', '广州', '成都', '石家庄']
     default_cities = [c for c in default_cities if c in all_cities][:5]
@@ -330,15 +335,15 @@ else:
         fig = px.line(city_trend, x='年份', y=pollutant, color='城市', markers=True,
                       title=f"所选城市{pollutant}年度趋势对比")
         st.plotly_chart(fig, use_container_width=True)
+
         # ====== 健康与出行建议 ======
         st.markdown("---")
         st.subheader("🛡️ 健康与出行建议")
+
         # 使用第一个选中城市的浓度作为参考
-        if cities:
-            first_city = cities[0]
-            first_city_val = df_year[df_year['城市'] == first_city][pollutant].mean()
-        else:
-            first_city_val = 0
+        first_city = cities[0]
+        first_city_val = df_year[df_year['城市'] == first_city][pollutant].mean()
+
         def get_advice(pol, val):
             if pol == 'PM2.5':
                 if val < 35:
@@ -373,18 +378,18 @@ else:
                     return ("强沙尘暴", "严禁外出，关闭门窗，使用空气净化器。", "#8e44ad")
             elif pol == 'So2':
                 if val < 50:
-                    return ("SO2浓度正常", "安全。", "#2ecc71")
+                    return ("SO₂浓度正常", "安全。", "#2ecc71")
                 elif val < 150:
-                    return ("SO2浓度偏高", "敏感人群减少户外活动。", "#e67e22")
+                    return ("SO₂浓度偏高", "敏感人群减少户外活动。", "#e67e22")
                 else:
-                    return ("SO2浓度较高", "减少外出，佩戴口罩。", "#e74c3c")
+                    return ("SO₂浓度较高", "减少外出，佩戴口罩。", "#e74c3c")
             elif pol == 'No2':
                 if val < 40:
-                    return ("NO2浓度正常", "安全。", "#2ecc71")
+                    return ("NO₂浓度正常", "安全。", "#2ecc71")
                 elif val < 80:
-                    return ("NO2浓度偏高", "交通繁忙路段避免长时间停留，敏感人群减少外出。", "#e67e22")
+                    return ("NO₂浓度偏高", "交通繁忙路段避免长时间停留，敏感人群减少外出。", "#e67e22")
                 else:
-                    return ("NO2浓度较高", "减少户外活动，注意呼吸道防护。", "#e74c3c")
+                    return ("NO₂浓度较高", "减少户外活动，注意呼吸道防护。", "#e74c3c")
             else:
                 return ("数据参考", "请关注官方空气质量预报。", "#95a5a6")
 
@@ -407,7 +412,6 @@ else:
             sug=suggestion
         ), unsafe_allow_html=True)
         st.caption("🔔 建议基于国家空气质量标准及世界卫生组织指南，仅供参考。")
-
 
         # 城市差异解读（保留）
         st.markdown("---")
