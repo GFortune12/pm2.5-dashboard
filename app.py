@@ -5,6 +5,7 @@ from streamlit_folium import st_folium
 import chardet
 from style import apply_custom_styles
 apply_custom_styles()
+st.markdown("<h1 style='color: red; background: yellow; padding: 20px; text-align: center;'>诊断：样式已生效！</h1>", unsafe_allow_html=True)
 
 # ---------- 页面配置 ----------
 st.set_page_config(page_title="现状总览", page_icon="🗺️", layout="wide")
