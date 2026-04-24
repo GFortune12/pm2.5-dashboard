@@ -413,6 +413,44 @@ else:
         ), unsafe_allow_html=True)
         st.caption("🔔 建议基于国家空气质量标准及世界卫生组织指南，仅供参考。")
 
+            # 城市差异解读（保留）
+        st.markdown("---")
+        st.subheader("城市差异解读")
+
+        if pollutant == 'PM2.5':
+            st.markdown(f"""
+            <div style="background-color:#f0f2f6; padding:20px; border-radius:10px;">
+            <h4>为什么不同城市{pollutant}趋势不同？</h4>
+            <ul>
+                <li><b>改善显著的城市（如北京、上海）</b>：严格执行产业升级、机动车管控和清洁能源替代，治理投入大。</li>
+                <li><b>改善较慢的城市（如石家庄、保定）</b>：地处华北平原，污染物易聚不易散；产业结构偏重。</li>
+                <li><b>西部城市（如拉萨、昆明）</b>：本底值低，无重工业污染，空气质量持续优良。</li>
+            </ul>
+            </div>
+            """, unsafe_allow_html=True)
+        elif pollutant == 'O3':
+            st.markdown(f"""
+            <div style="background-color:#f0f2f6; padding:20px; border-radius:10px;">
+            <h4>为什么不同城市{pollutant}趋势不同？</h4>
+            <ul>
+                <li><b>沿海城市（如上海、广州）</b>：受海陆风和区域传输影响，O₃浓度易超标。</li>
+                <li><b>北方城市（如北京、石家庄）</b>：夏季高温强辐射，O₃生成潜势大。</li>
+                <li><b>西部高海拔城市（如拉萨、西宁）</b>：紫外线强，但前体物排放少，O₃浓度相对可控。</li>
+            </ul>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style="background-color:#f0f2f6; padding:20px; border-radius:10px;">
+            <h4>为什么不同城市{pollutant}趋势不同？</h4>
+            <ul>
+                <li><b>北方工业城市</b>：排放量大，浓度较高。</li>
+                <li><b>南方城市</b>：扩散条件好，浓度较低。</li>
+                <li><b>西部城市</b>：人为活动少，浓度最低。</li>
+            </ul>
+            </div>
+            """, unsafe_allow_html=True)
+
         
     else:
         st.info("请在侧边栏至少选择一个城市。")
