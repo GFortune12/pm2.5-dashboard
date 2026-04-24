@@ -141,3 +141,4 @@ def apply_custom_styles():
         }}
     </style>
     """, unsafe_allow_html=True)
+    st.write("样式已加载")
