@@ -8,22 +8,22 @@ COLORS = {
     '中度污染': '#ff0000',
     '重度污染': '#99004c',
     '严重污染': '#7e0023',
-    'primary': '#2c3e50',     # 深蓝灰
-    'secondary': '#34495e',
-    'accent': '#1abc9c',      # 青绿色
-    'background': '#f5f6fa',  # 极浅灰
-    'card_bg': '#ffffff',
-    'text': '#2c3e50',
-    'border': '#e0e0e0',
-    'warning': '#f39c12',
-    'danger': '#e74c3c',
-    'success': '#27ae60'
+    'primary': '#0f172a',      # 深色背景
+    'secondary': '#1e293b',    # 卡片/侧边栏背景
+    'accent': '#38bdf8',       # 天蓝霓虹
+    'background': '#0f172a',   # 整体背景
+    'card_bg': '#1e293b',      # 卡片背景
+    'text': '#e2e8f0',         # 浅色文字
+    'border': '#334155',
+    'warning': '#fbbf24',
+    'danger': '#ef4444',
+    'success': '#10b981'
 }
 
 def apply_custom_styles():
     st.markdown(f"""
     <style>
-        /* ========== CSS 变量注入行业色 ========== */
+        /* ========== CSS 变量 ========== */
         :root {{
             --primary: {COLORS['primary']};
             --secondary: {COLORS['secondary']};
@@ -34,106 +34,105 @@ def apply_custom_styles():
             --border: {COLORS['border']};
         }}
 
-        /* ========== 全局标题 ========== */
-        h1 {{
-            color: #3b4a3f !important;  /* 保持深橄榄绿 */
-            font-weight: 600;
+        /* ========== 全局背景与文字 ========== */
+        body, .main, .stApp {{
+            background-color: var(--bg);
+            color: var(--text);
         }}
 
         /* ========== 侧边栏 ========== */
         section[data-testid="stSidebar"] {{
-            background-color: #e8e0d5;  /* 保持暖沙灰 */
+            background-color: #1e293b;
+            border-right: 1px solid #334155;
         }}
 
-        /* ========== KPI 卡片升级：渐变背景 + 悬停动效 ========== */
+        /* ========== 标题 ========== */
+        h1, h2, h3, h4 {{
+            color: #f1f5f9 !important;
+            font-weight: 600;
+        }}
+
+        /* ========== KPI 卡片 ========== */
         div[data-testid="metric-container"] {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #38bdf8;
             border-radius: 20px;
             padding: 20px 16px;
-            color: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            color: #e2e8f0;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
             transition: all 0.3s ease;
-            border: none !important;
         }}
         div[data-testid="metric-container"]:hover {{
-            transform: translateY(-6px);
-            box-shadow: 0 20px 35px rgba(0,0,0,0.15);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+            transform: translateY(-4px);
         }}
-        /* KPI 内部文字颜色调整为白色 */
         div[data-testid="metric-container"] * {{
-            color: white !important;
+            color: #e2e8f0 !important;
         }}
 
         /* ========== 按钮 ========== */
         .stButton > button {{
-            background-color: #6b7b5a;  /* 保持橄榄绿 */
-            color: white;
+            background-color: #38bdf8;
+            color: #0f172a;
             border-radius: 30px;
             border: none;
             padding: 8px 20px;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.2s ease;
         }}
         .stButton > button:hover {{
-            background-color: #4a5a3e;
-            box-shadow: 0 4px 8px rgba(107, 123, 90, 0.3);
+            background-color: #7dd3fc;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
             transform: translateY(-2px);
         }}
 
         /* ========== 下拉框 ========== */
         div[data-baseweb="select"] > div {{
             border-radius: 12px;
-            border-color: #c4b8a7;
+            border-color: #475569;
+            background-color: #1e293b;
         }}
         div[data-baseweb="select"] > div:focus-within {{
-            border-color: #6b7b5a !important;
-            box-shadow: 0 0 0 2px rgba(107, 123, 90, 0.2);
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
         }}
 
-        /* ========== 表格表头 ========== */
+        /* ========== 表格 ========== */
         div[data-testid="stDataFrame"] thead tr th {{
-            background-color: #4a3f38 !important;
-            color: #f0ebe4 !important;
-            font-weight: 500;
+            background-color: #38bdf8 !important;
+            color: #0f172a !important;
+            font-weight: 600;
+        }}
+        div[data-testid="stDataFrame"] tbody tr td {{
+            background-color: #1e293b;
+            color: #e2e8f0;
         }}
 
-        /* ========== 信息栏卡片 ========== */
-        .info-card {{
-            background-color: #f6f1ea;
+        /* ========== 卡片通用 ========== */
+        .info-card, .story-box {{
+            background-color: #1e293b;
+            border: 1px solid #334155;
             border-radius: 20px;
-            padding: 20px 18px;
-            box-shadow: 0 6px 14px rgba(90, 70, 50, 0.05);
-            border: 1px solid #d6ccc0;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
         }}
-        .info-card:hover {{
-            transform: translateY(-3px);
-            box-shadow: 0 12px 22px rgba(90, 70, 50, 0.1);
-        }}
-
-        /* ========== 故事引导区 ========== */
-        .story-box {{
-            background-color: #faf7f2;
-            border-radius: 20px;
-            padding: 20px 24px;
-            box-shadow: 0 6px 14px rgba(60, 50, 40, 0.04);
-            border-left: 6px solid #5c6e4e;
-            transition: all 0.3s ease;
-        }}
-        .story-box:hover {{
-            box-shadow: 0 10px 20px rgba(60, 50, 40, 0.08);
+        .info-card:hover, .story-box:hover {{
+            border-color: #38bdf8;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
         }}
 
         /* ========== 分割线 ========== */
         hr {{
-            border-color: #c9bfb2;
+            border-color: #334155;
         }}
 
-        /* ========== Plotly 图表容器美化 ========== */
+        /* ========== Plotly 图表容器 ========== */
         .stPlotlyChart {{
             border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            background-color: #1e293b;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }}
     </style>
     """, unsafe_allow_html=True)
