@@ -4,6 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import sys
+from style import apply_custom_styles
+apply_custom_styles()
 
 st.set_page_config(page_title="城市排名与总结", layout="wide")
 sys.path.append('../')  # 确保能找到 style 模块（因为 pages 在子目录）
