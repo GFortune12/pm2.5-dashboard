@@ -9,9 +9,18 @@ def apply_custom_styles():
             font-weight: 600;
         }
 
-        /* ========== 侧边栏 ========== */
+        /* ========== 侧边栏（半透明支持粒子背景） ========== */
         section[data-testid="stSidebar"] {
-            background-color: #e8e0d5;
+            background-color: rgba(232, 224, 213, 0.9) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        /* ========== 主内容区背景透明，展现粒子 ========== */
+        .main .block-container {
+            background-color: transparent !important;
+        }
+        .stApp {
+            background-color: transparent !important;
         }
 
         /* ========== KPI 卡片：三个不同左边框色 ========== */
