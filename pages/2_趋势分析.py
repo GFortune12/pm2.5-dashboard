@@ -4,6 +4,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 from sklearn.linear_model import LinearRegression
 import numpy as np
+from style import apply_custom_styles
+apply_custom_styles()
 
 st.set_page_config(page_title="趋势分析", layout="wide")
 import sys
