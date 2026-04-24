@@ -3,6 +3,8 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 import chardet
+from style import apply_custom_styles
+apply_custom_styles()
 
 # ---------- 页面配置 ----------
 st.set_page_config(page_title="现状总览", page_icon="🗺️", layout="wide")
