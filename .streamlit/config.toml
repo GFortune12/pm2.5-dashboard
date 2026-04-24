@@ -1,11 +1,6 @@
 [theme]
-# 主色调：陶土棕绿，用于按钮、滑块、选中边框，与 CSS 按钮颜色协调
 primaryColor = "#6b7b5a"
-# 页面背景：暖沙白，像亚麻纸张，与侧边栏的 #e8e0d5 形成层次
 backgroundColor = "#f5efe8"
-# 侧边栏/卡片背景：由 CSS 控制，这里设为与侧边栏相近，但不冲突
 secondaryBackgroundColor = "#e8e0d5"
-# 主要文字颜色：深褐灰，清晰不刺眼
 textColor = "#4a3f38"
-# 字体
 font = "sans serif"
