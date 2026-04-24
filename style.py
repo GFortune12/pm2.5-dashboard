@@ -8,22 +8,21 @@ COLORS = {
     '中度污染': '#ff0000',
     '重度污染': '#99004c',
     '严重污染': '#7e0023',
-    'primary': '#0f172a',      # 深色背景
-    'secondary': '#1e293b',    # 卡片/侧边栏背景
-    'accent': '#38bdf8',       # 天蓝霓虹
-    'background': '#0f172a',   # 整体背景
-    'card_bg': '#1e293b',      # 卡片背景
-    'text': '#e2e8f0',         # 浅色文字
-    'border': '#334155',
-    'warning': '#fbbf24',
-    'danger': '#ef4444',
-    'success': '#10b981'
+    'primary': '#2c3e50',
+    'secondary': '#34495e',
+    'accent': '#1abc9c',
+    'background': '#f5f6fa',
+    'card_bg': '#ffffff',
+    'text': '#2c3e50',
+    'border': '#e0e0e0',
+    'warning': '#f39c12',
+    'danger': '#e74c3c',
+    'success': '#27ae60'
 }
 
 def apply_custom_styles():
     st.markdown(f"""
     <style>
-        /* ========== CSS 变量 ========== */
         :root {{
             --primary: {COLORS['primary']};
             --secondary: {COLORS['secondary']};
@@ -40,99 +39,105 @@ def apply_custom_styles():
             color: var(--text);
         }}
 
-        /* ========== 侧边栏 ========== */
-        section[data-testid="stSidebar"] {{
-            background-color: #1e293b;
-            border-right: 1px solid #334155;
-        }}
-
-        /* ========== 标题 ========== */
-        h1, h2, h3, h4 {{
-            color: #f1f5f9 !important;
+        /* ========== 全局标题 ========== */
+        h1 {{
+            color: #3b4a3f !important;
             font-weight: 600;
         }}
 
-        /* ========== KPI 卡片 ========== */
+        /* ========== 侧边栏 ========== */
+        section[data-testid="stSidebar"] {{
+            background-color: #e8e0d5;
+        }}
+
+        /* ========== KPI 卡片：渐变背景 + 悬停动效 ========== */
         div[data-testid="metric-container"] {{
-            background: linear-gradient(145deg, #1e293b, #0f172a);
-            border: 1px solid #38bdf8;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 20px;
             padding: 20px 16px;
-            color: #e2e8f0;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+            color: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             transition: all 0.3s ease;
+            border: none !important;
         }}
         div[data-testid="metric-container"]:hover {{
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
-            transform: translateY(-4px);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.15);
         }}
         div[data-testid="metric-container"] * {{
-            color: #e2e8f0 !important;
+            color: white !important;
         }}
 
         /* ========== 按钮 ========== */
         .stButton > button {{
-            background-color: #38bdf8;
-            color: #0f172a;
+            background-color: #6b7b5a;
+            color: white;
             border-radius: 30px;
             border: none;
             padding: 8px 20px;
-            font-weight: 600;
+            font-weight: 500;
             transition: all 0.2s ease;
         }}
         .stButton > button:hover {{
-            background-color: #7dd3fc;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+            background-color: #4a5a3e;
+            box-shadow: 0 4px 8px rgba(107, 123, 90, 0.3);
             transform: translateY(-2px);
         }}
 
         /* ========== 下拉框 ========== */
         div[data-baseweb="select"] > div {{
             border-radius: 12px;
-            border-color: #475569;
-            background-color: #1e293b;
+            border-color: #c4b8a7;
         }}
         div[data-baseweb="select"] > div:focus-within {{
-            border-color: #38bdf8 !important;
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3);
+            border-color: #6b7b5a !important;
+            box-shadow: 0 0 0 2px rgba(107, 123, 90, 0.2);
         }}
 
-        /* ========== 表格 ========== */
+        /* ========== 表格表头 ========== */
         div[data-testid="stDataFrame"] thead tr th {{
-            background-color: #38bdf8 !important;
-            color: #0f172a !important;
-            font-weight: 600;
-        }}
-        div[data-testid="stDataFrame"] tbody tr td {{
-            background-color: #1e293b;
-            color: #e2e8f0;
+            background-color: #4a3f38 !important;
+            color: #f0ebe4 !important;
+            font-weight: 500;
         }}
 
-        /* ========== 卡片通用 ========== */
-        .info-card, .story-box {{
-            background-color: #1e293b;
-            border: 1px solid #334155;
+        /* ========== 信息栏卡片 ========== */
+        .info-card {{
+            background-color: #f6f1ea;
             border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            padding: 20px 18px;
+            box-shadow: 0 6px 14px rgba(90, 70, 50, 0.05);
+            border: 1px solid #d6ccc0;
             transition: all 0.3s ease;
         }}
-        .info-card:hover, .story-box:hover {{
-            border-color: #38bdf8;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+        .info-card:hover {{
+            transform: translateY(-3px);
+            box-shadow: 0 12px 22px rgba(90, 70, 50, 0.1);
+        }}
+
+        /* ========== 故事引导区 ========== */
+        .story-box {{
+            background-color: #faf7f2;
+            border-radius: 20px;
+            padding: 20px 24px;
+            box-shadow: 0 6px 14px rgba(60, 50, 40, 0.04);
+            border-left: 6px solid #5c6e4e;
+            transition: all 0.3s ease;
+        }}
+        .story-box:hover {{
+            box-shadow: 0 10px 20px rgba(60, 50, 40, 0.08);
         }}
 
         /* ========== 分割线 ========== */
         hr {{
-            border-color: #334155;
+            border-color: #c9bfb2;
         }}
 
-        /* ========== Plotly 图表容器 ========== */
+        /* ========== Plotly 图表容器美化 ========== */
         .stPlotlyChart {{
             border-radius: 16px;
-            background-color: #1e293b;
-            padding: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }}
     </style>
     """, unsafe_allow_html=True)
