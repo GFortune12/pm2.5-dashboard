@@ -3,40 +3,23 @@ import streamlit as st
 def apply_custom_styles():
     st.markdown("""
     <style>
-        /* ========== 全局星空背景与基础设定 ========== */
-        /* 页面基底：深邃夜空 */
-        .stApp {
-            background: linear-gradient(135deg, #0b1b3d 0%, #1a2f4a 50%, #0d1e33 100%);
-            background-attachment: fixed;
+        /* ========== 全局背景（大地暖色系） ========== */
+        body .stApp {
+            background: linear-gradient(135deg, #f5efe8 0%, #faf7f2 50%, #f0ebe4 100%) !important;
+            background-attachment: fixed !important;
+        }
+        body, .stMarkdown, p, span, label {
+            color: #4a3f38 !important;
         }
 
-        /* 让主内容区透明，为的是能透出基底 */
-        .main .block-container {
-            background-color: transparent !important;
-        }
-
-        /* ========== 动态星空效果 (伪元素) ========== */
-        /* 背景容器 */
-        .stApp::before {
+        /* ========== 动态星空背景（浅色版，白色星点） ========== */
+        body .stApp::after {
             content: "";
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -5;
-            background: transparent;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -4;
             pointer-events: none;
-        }
-
-        /* 星星层 - 使用重复的径向渐变和动画模拟星空 */
-        .stApp::after {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             background-image: 
                 radial-gradient(2px 2px at 5% 10%, #ffffff, rgba(0,0,0,0)),
                 radial-gradient(2px 2px at 10% 15%, #ffffff, rgba(0,0,0,0)),
@@ -58,61 +41,97 @@ def apply_custom_styles():
                 radial-gradient(1px 1px at 90% 50%, #ffffff, rgba(0,0,0,0)),
                 radial-gradient(2px 2px at 95% 55%, #f0f0f0, rgba(0,0,0,0));
             background-size: 400px 400px;
-            z-index: -4;
-            pointer-events: none;
             animation: twinkle 80s linear infinite;
-            opacity: 0.7;
+            opacity: 0.3;
         }
 
         @keyframes twinkle {
             0% { transform: translateY(0px); }
-            50% { opacity: 0.5; }
-            100% { transform: translateY(-400px); opacity: 0.7; }
-        }
-
-        /* ========== 通用卡片与容器美化 ========== */
-        /* 沿用大地色系的半透明效果，增加“毛玻璃”质感 */
-        .stButton > button, div[data-baseweb="select"] > div, .stTextInput > div > div > input {
-            border-radius: 12px !important;
-        }
-
-        .stPlotlyChart {
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            50% { opacity: 0.15; }
+            100% { transform: translateY(-400px); opacity: 0.3; }
         }
 
         /* ========== 侧边栏 ========== */
-        section[data-testid="stSidebar"] {
-            background-color: rgba(26, 47, 74, 0.85);
-            backdrop-filter: blur(10px);
+        body section[data-testid="stSidebar"] {
+            background-color: rgba(232, 224, 213, 0.85) !important;
+            backdrop-filter: blur(8px);
         }
 
-        /* ========== 适配夜空主题的标题与文字 ========== */
-        h1, h2, h3, h4 {
-            color: #e2e8f0 !important;
-            font-weight: 600;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        /* ========== 主内容区透明 ========== */
+        .main .block-container {
+            background-color: transparent !important;
         }
-        
-        label, .stMarkdown, .stCaption {
-            color: #e2e8f0 !important;
+
+        /* ========== KPI 卡片：大地色边框 ========== */
+        body div[data-testid="metric-container"] {
+            background-color: #fdfbf7 !important;
+            border-radius: 16px !important;
+            padding: 16px 12px !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.04) !important;
+        }
+        body div[data-testid="metric-container"]:nth-of-type(1) {
+            border-left: 6px solid #c27a5e !important;
+        }
+        body div[data-testid="metric-container"]:nth-of-type(2) {
+            border-left: 6px solid #4a7c59 !important;
+        }
+        body div[data-testid="metric-container"]:nth-of-type(3) {
+            border-left: 6px solid #d4a373 !important;
+        }
+
+        /* ========== 按钮 ========== */
+        body .stButton > button {
+            background-color: #6b7b5a !important;
+            color: white !important;
+            border-radius: 30px !important;
+            border: none !important;
+        }
+
+        /* ========== 下拉框 ========== */
+        body div[data-baseweb="select"] > div {
+            border-radius: 12px !important;
+            border-color: #c4b8a7 !important;
+        }
+        body div[data-baseweb="select"] > div:focus-within {
+            border-color: #6b7b5a !important;
+            box-shadow: 0 0 0 2px rgba(107, 123, 90, 0.2) !important;
+        }
+
+        /* ========== 表格表头 ========== */
+        body div[data-testid="stDataFrame"] thead tr th {
+            background-color: #4a3f38 !important;
+            color: #f0ebe4 !important;
+            font-weight: 500;
+        }
+
+        /* ========== 信息栏卡片 ========== */
+        body .info-card {
+            background-color: #f6f1ea !important;
+            border-radius: 20px !important;
+            padding: 20px 18px !important;
+            box-shadow: 0 6px 14px rgba(90, 70, 50, 0.05) !important;
+            border: 1px solid #d6ccc0 !important;
+        }
+
+        /* ========== 故事引导区 ========== */
+        body .story-box {
+            background-color: #faf7f2 !important;
+            border-radius: 20px !important;
+            padding: 20px 24px !important;
+            box-shadow: 0 6px 14px rgba(60, 50, 40, 0.04) !important;
+            border-left: 6px solid #5c6e4e !important;
         }
 
         /* ========== 分割线 ========== */
         hr {
-            border-color: rgba(255,255,255,0.2);
-            margin: 2rem 0;
+            border-color: #c9bfb2 !important;
         }
 
-        /* ========== 信息栏与故事框 ========== */
-        .info-card, .story-box {
-            background-color: rgba(20, 40, 65, 0.8);
-            backdrop-filter: blur(8px);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+        /* ========== 图表容器 ========== */
+        body .stPlotlyChart {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
     </style>
     """, unsafe_allow_html=True)
