@@ -3,13 +3,13 @@ import streamlit as st
 def apply_custom_styles():
     st.markdown("""
     <style>
-        /* ========== 全局背景（清新绿渐变） ========== */
+        /* ========== 全局背景（清爽蓝渐变） ========== */
         body .stApp {
-            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 50%, #e0f2f1 100%) !important;
+            background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 50%, #e0f7fa 100%) !important;
             background-attachment: fixed !important;
         }
         body, .stMarkdown, p, span, label {
-            color: #2e3b2e !important;
+            color: #1a237e !important;
         }
 
         /* ========== 侧边栏 ========== */
@@ -32,10 +32,10 @@ def apply_custom_styles():
             border: none !important;
         }
         body div[data-testid="metric-container"]:nth-of-type(1) {
-            border-left: 6px solid #43a047 !important;
+            border-left: 6px solid #1e88e5 !important;
         }
         body div[data-testid="metric-container"]:nth-of-type(2) {
-            border-left: 6px solid #0288d1 !important;
+            border-left: 6px solid #43a047 !important;
         }
         body div[data-testid="metric-container"]:nth-of-type(3) {
             border-left: 6px solid #ef6c00 !important;
@@ -43,28 +43,28 @@ def apply_custom_styles():
 
         /* ========== 按钮 ========== */
         body .stButton > button {
-            background-color: #43a047 !important;
+            background-color: #1e88e5 !important;
             color: white !important;
             border-radius: 30px !important;
             border: none !important;
         }
         body .stButton > button:hover {
-            background-color: #2e7d32 !important;
+            background-color: #1565c0 !important;
         }
 
         /* ========== 下拉框 ========== */
         body div[data-baseweb="select"] > div {
             border-radius: 12px !important;
-            border-color: #a5d6a7 !important;
+            border-color: #90caf9 !important;
         }
         body div[data-baseweb="select"] > div:focus-within {
-            border-color: #43a047 !important;
-            box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.2) !important;
+            border-color: #1e88e5 !important;
+            box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.2) !important;
         }
 
         /* ========== 表格表头 ========== */
         body div[data-testid="stDataFrame"] thead tr th {
-            background-color: #2e7d32 !important;
+            background-color: #1565c0 !important;
             color: white !important;
             font-weight: 500;
         }
@@ -75,7 +75,7 @@ def apply_custom_styles():
             border-radius: 20px !important;
             padding: 20px 18px !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.04) !important;
-            border: 1px solid #c8e6c9 !important;
+            border: 1px solid #bbdefb !important;
         }
 
         /* ========== 故事引导区 ========== */
@@ -84,12 +84,12 @@ def apply_custom_styles():
             border-radius: 20px !important;
             padding: 20px 24px !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.04) !important;
-            border-left: 6px solid #43a047 !important;
+            border-left: 6px solid #1e88e5 !important;
         }
 
         /* ========== 分割线 ========== */
         hr {
-            border-color: #c8e6c9 !important;
+            border-color: #bbdefb !important;
         }
 
         /* ========== 图表容器 ========== */
